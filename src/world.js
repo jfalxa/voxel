@@ -10,18 +10,15 @@ function createRandom(seed) {
 }
 
 function createWorld(w, h, d) {
-  const rand = createRandom('coucou')
   return (x, y, z) => {
     if (x < 0 || x >= w) return 0
     else if (y < 0 || y >= h) return 0
     else if (z < 0 || z >= d) return 0
-    // else if (x < 4 && y < 4) return 0
-    // else return rand(x + w * (y + h * z)) > 0.5 ? 1 : 0;
     else return 1
   }
 }
 
-function computeMask(world, chunk, axis, depth) {
+function computeMask(world, chunk, origin, axis, depth) {
   const main = (axis + 1) % 3
   const sec = (axis + 2) % 3
 
@@ -38,9 +35,10 @@ function computeMask(world, chunk, axis, depth) {
       cell[main] = prev[main] = i
       cell[sec] = prev[sec] = j
 
-      const visible = world(...cell) !== world(...prev)
+      const a = world(cell[0] + origin[0], cell[1], cell[2] + origin[1])
+      const b = world(prev[0] + origin[0], prev[1], prev[2] + origin[1])
 
-      mask.set(i, j, visible)
+      mask.set(i, j, a !== b)
     }
 
   return mask
@@ -75,7 +73,7 @@ function extractQuads(mask) {
   return quads
 }
 
-function computeVertices(quads2D, axis, depth) {
+function computeVertices(quads2D, origin, axis, depth) {
   const main = (axis + 1) % 3
   const sec = (axis + 2) % 3
 
@@ -84,6 +82,9 @@ function computeVertices(quads2D, axis, depth) {
     o[axis] = depth
     o[main] = quad[0] // x
     o[sec] = quad[1] // y
+
+    o[0] += origin[0]
+    o[2] += origin[1]
 
     const dw = [0, 0, 0]
     dw[main] = quad[2] // w
@@ -101,15 +102,15 @@ function computeVertices(quads2D, axis, depth) {
   })
 }
 
-function mergeQuads(world, chunk) {
+function mergeQuads(world, chunk, origin) {
   const quads = []
 
   // scan each dimension separately
   for (let axis = 0; axis < 3; axis++)
     for (let depth = 0; depth <= chunk[axis]; depth++) {
-      const mask = computeMask(world, chunk, axis, depth)
+      const mask = computeMask(world, chunk, origin, axis, depth)
       const quads2D = extractQuads(mask)
-      const vertices = computeVertices(quads2D, axis, depth)
+      const vertices = computeVertices(quads2D, origin, axis, depth)
 
       quads.push(...vertices)
     }
@@ -139,7 +140,7 @@ function buildMesh(quads, scene) {
 
   var mat = new B.StandardMaterial('', scene)
   mat.backFaceCulling = false
-  mat.wireframe = true
+  // mat.wireframe = true
 
   const mesh = new B.Mesh('custom', scene)
   mesh.material = mat
@@ -149,10 +150,23 @@ function buildMesh(quads, scene) {
   return mesh
 }
 
-export function buildWorld(chunk, scene) {
-  const world = createWorld(...chunk)
-  const quads = mergeQuads(world, chunk)
+export function buildChunk(world, chunk, origin, scene) {
+  const quads = mergeQuads(world, chunk, origin)
   const mesh = buildMesh(quads, scene)
 
   return mesh
+}
+
+export function buildWorld(dimensions, chunk, scene) {
+  const world = createWorld(
+    dimensions[0] * chunk[0],
+    chunk[1],
+    dimensions[1] * chunk[2]
+  )
+
+  for (let i = 0; i < dimensions[0]; i++)
+    for (let j = 0; j < dimensions[1]; j++) {
+      const origin = [i * chunk[0], j * chunk[2]]
+      buildChunk(world, chunk, origin, scene)
+    }
 }
