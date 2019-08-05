@@ -2,7 +2,7 @@ import * as B from 'babylonjs'
 import { buildWorld } from './world'
 
 const DIMENSIONS = [10, 10]
-const CHUNK = [64, 64, 64]
+const CHUNK = [32, 32, 32]
 
 const root = document.getElementById('root')
 const canvas = document.createElement('canvas')

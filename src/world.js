@@ -1,20 +1,15 @@
 import * as B from 'babylonjs'
+import { Perlin2 } from 'tumult'
 import Mat2 from './mat2'
 
-function createRandom(seed) {
-  seed = parseInt(seed, 36)
-  return index => {
-    const x = Math.sin(seed + index) * 10000
-    return x - Math.floor(x)
-  }
-}
-
 function createWorld(w, h, d) {
+  const noise = new Perlin2('WORLD')
+
   return (x, y, z) => {
     if (x < 0 || x >= w) return 0
     else if (y < 0 || y >= h) return 0
     else if (z < 0 || z >= d) return 0
-    else return 1
+    else return noise.gen(x / w, z / d) * h >= y ? 1 : 0
   }
 }
 
@@ -46,13 +41,13 @@ function computeMask(world, chunk, origin, axis, depth) {
 
 function scanW(mask, x, y) {
   let w
-  for (w = 1; mask.get(x + w, y) && w < mask.w - x; w++) continue
+  for (w = 0; mask.get(x + w, y) && w < mask.w - x; w++) continue
   return w
 }
 
 function scanH(mask, x, y, w) {
   let h
-  for (h = 1; scanW(mask, x, y + h) >= w && h < mask.h - y; h++) continue
+  for (h = 0; scanW(mask, x, y + h) >= w && h < mask.h - y; h++) continue
   return h
 }
 
