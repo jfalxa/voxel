@@ -1,8 +1,9 @@
 import * as B from 'babylonjs'
 import { buildWorld } from './world'
+import draw from './draw'
 
-const DIMENSIONS = [10, 10]
-const CHUNK = [32, 32, 32]
+const DIMENSIONS = [16, 16]
+const CHUNK = [16, 16, 16]
 
 const root = document.getElementById('root')
 const canvas = document.createElement('canvas')
@@ -20,27 +21,35 @@ const engine = new B.Engine(canvas, true, {
 function createScene() {
   const scene = new B.Scene(engine)
 
-  const center = new B.Vector3(
-    (DIMENSIONS[0] * CHUNK[0]) / 2,
-    CHUNK[1] / 2,
-    (DIMENSIONS[1] * CHUNK[2]) / 2
-  )
-
-  const camera = new B.ArcRotateCamera('camera', 0, 0, 10, center, scene) // prettier-ignore
+  const camera = new B.ArcRotateCamera('camera', 0, 0, 10, new B.Vector3(0.5, 0.5, 0.5), scene) // prettier-ignore
 
   camera.setPosition(
-    new B.Vector3(
-      DIMENSIONS[0] * CHUNK[0] * 2,
-      DIMENSIONS[0] * CHUNK[1] * 2,
-      -CHUNK[2] * 2
-    )
+    new B.Vector3(DIMENSIONS[0] * CHUNK[0], DIMENSIONS[0] * CHUNK[1], -CHUNK[2])
   )
 
   camera.attachControl(canvas, false)
 
   const light = new B.HemisphericLight('light1', new B.Vector3(0, 1, 0), scene)
 
-  buildWorld(DIMENSIONS, CHUNK, scene)
+  var ground = new B.MeshBuilder.CreateGround(
+    'ground',
+    { width: DIMENSIONS[0] * CHUNK[0], height: DIMENSIONS[1] * CHUNK[2] },
+    scene
+  )
+
+  const water = new B.StandardMaterial('water', scene)
+  water.diffuseColor = new B.Color3(0, 0, 0.7)
+  water.alpha = 0.5
+
+  ground.material = water
+  ground.position.y = Math.floor(CHUNK[1] / 3) + 0.5
+
+  const meshes = buildWorld(DIMENSIONS, CHUNK, scene)
+
+  meshes.forEach(mesh => {
+    mesh.position.x = -(DIMENSIONS[0] * CHUNK[0]) / 2
+    mesh.position.z = -(DIMENSIONS[1] * CHUNK[2]) / 2
+  })
 
   return scene
 }
@@ -56,3 +65,5 @@ engine.runRenderLoop(() => {
 window.addEventListener('resize', () => {
   engine.resize()
 })
+
+draw(scene)

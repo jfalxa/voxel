@@ -1,15 +1,23 @@
 import * as B from 'babylonjs'
-import { Perlin2 } from 'tumult'
+import SimplexNoise from 'open-simplex-noise'
+import { makeCuboid } from 'fractal-noise'
 import Mat2 from './mat2'
 
 function createWorld(w, h, d) {
-  const noise = new Perlin2('WORLD')
+  const simplex = new SimplexNoise('enculé de ta race')
+
+  const world = makeCuboid(w, h, d, simplex.noise3D.bind(simplex), {
+    frequency: 0.01,
+    octaves: 3,
+    amplitude: 2.1,
+    persistence: 0.7
+  })
 
   return (x, y, z) => {
     if (x < 0 || x >= w) return 0
     else if (y < 0 || y >= h) return 0
     else if (z < 0 || z >= d) return 0
-    else return noise.gen(x / w, z / d) * h >= y ? 1 : 0
+    else return Math.abs(world[x][y][z]) > y / h ? 1 : 0
   }
 }
 
@@ -135,7 +143,7 @@ function buildMesh(quads, scene) {
 
   var mat = new B.StandardMaterial('', scene)
   mat.backFaceCulling = false
-  // mat.wireframe = true
+  mat.diffuseColor = new B.Color3(0, 0.5, 0)
 
   const mesh = new B.Mesh('custom', scene)
   mesh.material = mat
@@ -153,6 +161,8 @@ export function buildChunk(world, chunk, origin, scene) {
 }
 
 export function buildWorld(dimensions, chunk, scene) {
+  const chunks = []
+
   const world = createWorld(
     dimensions[0] * chunk[0],
     chunk[1],
@@ -162,6 +172,10 @@ export function buildWorld(dimensions, chunk, scene) {
   for (let i = 0; i < dimensions[0]; i++)
     for (let j = 0; j < dimensions[1]; j++) {
       const origin = [i * chunk[0], j * chunk[2]]
-      buildChunk(world, chunk, origin, scene)
+      const mesh = buildChunk(world, chunk, origin, scene)
+
+      chunks.push(mesh)
     }
+
+  return chunks
 }
