@@ -46,30 +46,57 @@ function initLight(scene) {
 }
 
 function initGround(scene) {
-  var ground = new B.MeshBuilder.CreateGround(
+  const ground = new B.MeshBuilder.CreateGround(
     'ground',
     { width: DIMENSIONS[0] * CHUNK[0], height: DIMENSIONS[1] * CHUNK[2] },
     scene
   )
 
+  const beige = new B.StandardMaterial('beige', scene)
+  beige.diffuseColor = new B.Color3(245 / 255, 245 / 255, 220 / 255)
+
+  ground.material = beige
+
   return ground
 }
 
 function initWater(scene) {
-  var water = new B.MeshBuilder.CreateBox('ground', {
-    width: DIMENSIONS[0] * CHUNK[0] + 1,
-    depth: DIMENSIONS[1] * CHUNK[2] + 1,
-    height: Math.floor(CHUNK[1] / 3) + 1
-  })
+  var water = new B.MeshBuilder.CreateBox(
+    'ground',
+    {
+      width: DIMENSIONS[0] * CHUNK[0] + 1,
+      depth: DIMENSIONS[1] * CHUNK[2] + 1,
+      height: Math.floor(CHUNK[1] / 3) + 1
+    },
+    scene
+  )
 
   water.position.y += Math.floor(CHUNK[1] / 3) / 2
 
   const blue = new B.StandardMaterial('blue', scene)
   blue.diffuseColor = new B.Color3(0, 0, 0.7)
   blue.alpha = 0.5
+  blue.backFaceCulling = false
 
   water.material = blue
   water.isPickable = false
+
+  // water.isVisible = false
+
+  scene.fogMode = BABYLON.Scene.FOGMODE_EXP2
+
+  const colorfogwater = new BABYLON.Color3(10 / 255, 80 / 255, 130 / 255) // blue underwater
+  const colorfogAmbient = new BABYLON.Color3(0.8, 0.8, 0.9)
+
+  scene.registerBeforeRender(() => {
+    if (scene.activeCamera.position.y <= Math.floor(CHUNK[1] / 3) + 1) {
+      scene.fogColor = colorfogwater
+      scene.fogDensity = 0.04
+    } else {
+      scene.fogColor = colorfogAmbient
+      scene.fogDensity = 0.00001
+    }
+  })
 
   return water
 }
