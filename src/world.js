@@ -32,8 +32,6 @@ function createWorld(w, h, d) {
 }
 
 export function buildWorld(dimensions, chunk, scene) {
-  const chunks = []
-
   const world = createWorld(
     dimensions[0] * chunk[0],
     chunk[1],
@@ -45,8 +43,11 @@ export function buildWorld(dimensions, chunk, scene) {
       const origin = [i * chunk[0], j * chunk[2]]
       const mesh = buildChunk(world, chunk, origin, scene)
 
-      chunks.push(mesh)
+      mesh.position.x = -(dimensions[0] * chunk[0]) / 2
+      mesh.position.z = -(dimensions[1] * chunk[2]) / 2
     }
 
-  return chunks
+  scene.world = world
+
+  return world
 }

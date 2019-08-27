@@ -75,14 +75,7 @@ function initWater(scene) {
 }
 
 function initWorld(scene) {
-  const meshes = buildWorld(DIMENSIONS, CHUNK, scene)
-
-  meshes.forEach(mesh => {
-    mesh.position.x = -(DIMENSIONS[0] * CHUNK[0]) / 2
-    mesh.position.z = -(DIMENSIONS[1] * CHUNK[2]) / 2
-  })
-
-  return meshes
+  return buildWorld(DIMENSIONS, CHUNK, scene)
 }
 
 function createScene() {
