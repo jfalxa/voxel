@@ -23,6 +23,8 @@ function getCursorPosition(scene) {
 }
 
 function getPlanePosition(scene, plane) {
+  if (!plane) return null
+
   const ray = scene.createPickingRay(scene.pointerX, scene.pointerY)
   const distance = ray.intersectsPlane(plane)
   return snap(ray.origin.addInPlace(ray.direction.scaleInPlace(distance)))
@@ -41,10 +43,21 @@ function buildCursor(scene) {
   return cursor
 }
 
+function resetDraw(state) {
+  state.drawing = false
+  state.origin = null
+  state.plane = null
+  state.deltaY = 0
+
+  state.cursor.scaling.x = 1
+  state.cursor.scaling.y = 1
+  state.cursor.scaling.z = 1
+  state.cursor.isVisible = false
+}
+
 function listenToMouse(scene, state) {
   function pointerDown(info, state) {
     state.drawing = true
-    state.deltaY = 0
 
     state.plane = B.Plane.FromPositionAndNormal(
       state.origin.clone(),
@@ -76,18 +89,11 @@ function listenToMouse(scene, state) {
   }
 
   function pointerUp(info, state) {
-    state.drawing = false
-    state.origin = null
-    state.plane = null
-    state.deltaY = 0
-
     const result = state.cursor.clone()
     result.material = null
     result.isPickable = true
 
-    state.cursor.scaling.x = 1
-    state.cursor.scaling.y = 1
-    state.cursor.scaling.z = 1
+    resetDraw(state)
   }
 
   function pointerWheel(info, state) {
@@ -100,10 +106,12 @@ function listenToMouse(scene, state) {
   }
 
   scene.onPointerObservable.add(info => {
-    if (info.event.shiftKey) {
-      return scene.activeCamera.attachControl()
+    if (!info.event.shiftKey) {
+      scene.activeCamera.attachControl()
+      return resetDraw(state)
     }
 
+    state.cursor.isVisible = true
     scene.activeCamera.detachControl()
 
     switch (info.type) {
