@@ -36,9 +36,10 @@ function buildCursor(scene) {
   mat.wireframe = true
 
   const cursor = B.MeshBuilder.CreateBox('cursor', { size: 1 }, scene)
-  cursor.setPivotPoint(new B.Vector3(-0.5, -0.5, -0.5))
   cursor.isPickable = false
   cursor.material = mat
+
+  cursor.setPivotPoint(new B.Vector3(-0.5, -0.5, -0.5))
 
   return cursor
 }
@@ -57,6 +58,8 @@ function resetDraw(state) {
 
 function listenToMouse(scene, state) {
   function pointerDown(info, state) {
+    if (!state.origin) return
+
     state.drawing = true
 
     state.plane = B.Plane.FromPositionAndNormal(
@@ -89,9 +92,20 @@ function listenToMouse(scene, state) {
   }
 
   function pointerUp(info, state) {
-    const result = state.cursor.clone()
-    result.material = null
-    result.isPickable = true
+    const [width, , depth] = scene.world.dimensions
+
+    const delta = new B.Vector3(width / 2 - 0.5, -0.5, depth / 2 - 0.5)
+    const origin = state.cursor.position.add(delta)
+    const dimensions = state.cursor.scaling.clone()
+
+    const shouldCarve = info.event.which === 3
+    scene.world.fill(origin, dimensions, shouldCarve ? -1 : 1)
+
+    scene.chunks = scene.chunks.map(chunk =>
+      state.cursor.intersectsMesh(chunk.intersectionBox)
+        ? chunk.rebuild()
+        : chunk
+    )
 
     resetDraw(state)
   }

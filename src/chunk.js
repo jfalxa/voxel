@@ -77,21 +77,39 @@ function buildMesh(triangles, scene) {
   return mesh
 }
 
-function rebuildMesh() {
-  const postition = mesh.position.clone()
-  const rebuilt = buildChunk(world, chunk, origin, scene)
+function initIntersecion(chunk, scene) {
+  const intersectionBox = B.MeshBuilder.CreateBox(
+    'intersect' + chunk,
+    {
+      width: chunk[0],
+      height: chunk[1],
+      depth: chunk[2]
+    },
+    scene
+  )
 
-  resbuilt.position = postition
-  mesh.dispose()
+  intersectionBox.isVisible = false
+  intersectionBox.isPickable = false
 
-  return rebuilt
+  return intersectionBox
 }
 
 export default function buildChunk(world, chunk, origin, scene) {
   const triangles = simplifyMesh(world, chunk, origin)
   const mesh = buildMesh(triangles, scene)
 
-  mesh.rebuild = rebuildMesh
+  mesh.intersectionBox = initIntersecion(chunk, scene)
+
+  mesh.rebuild = function rebuildMesh() {
+    const rebuilt = buildChunk(world, chunk, origin, scene)
+
+    rebuilt.intersectionBox = mesh.intersectionBox
+    rebuilt.position = mesh.position.clone()
+
+    mesh.dispose()
+
+    return rebuilt
+  }
 
   return mesh
 }
