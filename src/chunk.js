@@ -1,40 +1,29 @@
 import * as B from 'babylonjs'
 import greedyQuads from './greedy'
 
-function computeNormal(vertex, world, axis) {
+function computeQuadNormal(vertices, world, axis) {
   const main = (axis + 1) % 3
   const sec = (axis + 2) % 3
 
-  const normal = Array(3)
-  normal[main] = 0
-  normal[sec] = 0
+  const normal = [0, 0, 0]
 
-  const nextHalf = []
-  const prevHalf = []
+  // make sure the selected voxels are inside the quad
+  const deltas = [[0, 0], [-1, 0], [-1, -1], [0, -1]]
 
-  // split the 8 neighbours around the vertex
-  // into two halves separated by the given axis
-  for (let i = -1; i < 1; i++)
-    for (let j = -1; j < 1; j++) {
-      const vn = Array(3)
-      vn[axis] = vertex[axis]
-      vn[main] = vertex[main] + i
-      vn[sec] = vertex[sec] + j
+  // check voxels around each corner of the quad
+  vertices.forEach((vertex, i) => {
+    const prev = [...vertex]
+    prev[axis] += -1
+    prev[main] += deltas[i][0]
+    prev[sec] += deltas[i][1]
 
-      const vp = Array(3)
-      vp[axis] = vertex[axis] - 1
-      vp[main] = vertex[main] + i
-      vp[sec] = vertex[sec] + j
+    const prevBlock = world(...prev)
+    const nextBlock = world(...vertex)
 
-      nextHalf.push(vn)
-      prevHalf.push(vp)
-    }
+    normal[axis] += prevBlock - nextBlock
+  })
 
-  // compare both halves and check which one has more space
-  const nextBlocks = nextHalf.reduce((blocks, v) => blocks + world(...v), 0)
-  const prevBlocks = prevHalf.reduce((blocks, v) => blocks + world(...v), 0)
-
-  normal[axis] = nextBlocks <= prevBlocks ? 1 : -1
+  normal[axis] = Math.sign(normal[axis])
 
   return normal
 }
@@ -64,20 +53,13 @@ function computeVertices(quads2D, world, origin, axis, depth) {
     const C = [o[0] + dw[0] + dh[0], o[1] + dw[1] + dh[1], o[2] + dw[2] + dh[2]]
     const D = [o[0] + dh[0], o[1] + dh[1], o[2] + dh[2]]
 
-    // prettier-ignore
-    const vertices = [
-      ...A, // A
-      ...B, // B
-      ...C, // C
-      ...D // D
-    ];
+    const normal = computeQuadNormal([A, B, C, D], world, axis)
+    const normals = [...normal, ...normal, ...normal, ...normal]
 
-    const normals = [
-      ...computeNormal(A, world, axis),
-      ...computeNormal(B, world, axis),
-      ...computeNormal(C, world, axis),
-      ...computeNormal(D, world, axis)
-    ]
+    // prettier-ignore
+    const vertices = normal[axis] < 0
+      ? [...A, ...B, ...C, ...D]
+      : [...A, ...D, ...C, ...B]
 
     return [vertices, normals]
   })
@@ -123,7 +105,6 @@ function buildMesh(triangles, scene) {
   vertexData.normals = allNormals
 
   var mat = new B.StandardMaterial('', scene)
-  mat.backFaceCulling = false
   mat.diffuseColor = new B.Color3(0, 0.5, 0)
 
   const mesh = new B.Mesh('custom', scene)

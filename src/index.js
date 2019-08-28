@@ -3,8 +3,8 @@ import * as B from 'babylonjs'
 import { buildWorld } from './world'
 import initDraw from './draw'
 
-const DIMENSIONS = [4, 4]
-const CHUNK = [32, 32, 32]
+const DIMENSIONS = [1, 1]
+const CHUNK = [8, 8, 8]
 
 const root = document.getElementById('root')
 const canvas = document.createElement('canvas')
@@ -121,7 +121,7 @@ function createScene() {
   initCamera(scene)
   initLight(scene)
   initGround(scene)
-  initWater(scene)
+  // initWater(scene)
   initWorld(scene)
   initDraw(scene)
 
