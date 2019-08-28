@@ -3,7 +3,7 @@ export default class Mat2 {
     this.w = w
     this.h = h
 
-    this.data = new Uint8Array(w * h)
+    this.data = new Int8Array(w * h)
   }
 
   index(x, y) {
@@ -23,7 +23,7 @@ export default class Mat2 {
 
     if (index === -1) return
 
-    const x = index % this.h
+    const x = index % this.w
     const y = Math.floor(index / this.w)
 
     return [x, y]
