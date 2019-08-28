@@ -20,21 +20,24 @@ function computeMask(world, chunk, origin, axis, depth) {
       const a = world(cell[0] + origin[0], cell[1], cell[2] + origin[1])
       const b = world(prev[0] + origin[0], prev[1], prev[2] + origin[1])
 
-      mask.set(i, j, a !== b)
+      mask.set(i, j, a - b)
     }
 
   return mask
 }
 
-function scanW(mask, x, y) {
+function scanW(mask, x, y, type = mask.get(x, y)) {
+  if (!type) return 0
+
   let w
-  for (w = 0; mask.get(x + w, y) && w < mask.w - x; w++) continue
+  for (w = 0; mask.get(x + w, y) === type && w < mask.w - x; w++) continue
   return w
 }
 
 function scanH(mask, x, y, w) {
   let h
-  for (h = 0; scanW(mask, x, y + h) >= w && h < mask.h - y; h++) continue
+  const type = mask.get(x, y)
+  for (h = 0; scanW(mask, x, y + h, type) >= w && h < mask.h - y; h++) continue
   return h
 }
 
