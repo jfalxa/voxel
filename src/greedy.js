@@ -6,19 +6,19 @@ function computeMask(world, chunk, origin, axis, depth) {
 
   const mask = new Mat2(chunk[main], chunk[sec])
 
-  const cell = [0, 0, 0]
   const prev = [0, 0, 0]
+  const next = [0, 0, 0]
 
-  cell[axis] = depth
-  prev[axis] = depth - 1
+  next[axis] = origin[axis] + depth
+  prev[axis] = origin[axis] + depth - 1
 
   for (let i = 0; i < chunk[main]; i++)
     for (let j = 0; j < chunk[sec]; j++) {
-      cell[main] = prev[main] = i
-      cell[sec] = prev[sec] = j
+      next[main] = prev[main] = origin[main] + i
+      next[sec] = prev[sec] = origin[sec] + j
 
-      const a = world(cell[0] + origin[0], cell[1], cell[2] + origin[1])
-      const b = world(prev[0] + origin[0], prev[1], prev[2] + origin[1])
+      const a = world(...next)
+      const b = world(...prev)
 
       mask.set(i, j, a - b)
     }
@@ -27,9 +27,8 @@ function computeMask(world, chunk, origin, axis, depth) {
 }
 
 function scanW(mask, x, y, type = mask.get(x, y)) {
-  if (!type) return 0
-
   let w
+  if (!type) return 0
   for (w = 0; mask.get(x + w, y) === type && w < mask.w - x; w++) continue
   return w
 }

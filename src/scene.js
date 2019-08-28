@@ -1,19 +1,13 @@
 import * as B from 'babylonjs'
 
-import { buildWorld } from './world'
-import initDraw from './draw'
+import { WIDTH, HEIGHT, DEPTH, WATER_LEVEL, DIMENSIONS, CHUNK } from './config'
 
-const DIMENSIONS = [4, 4]
-const CHUNK = [16, 64, 16]
+import buildWorld from './world'
+import initDraw from './draw'
 
 function initCamera(scene, canvas) {
   const zoom = -1.1
-
-  const pov = new B.Vector3(
-    zoom * CHUNK[0] * DIMENSIONS[0],
-    zoom * -1.5 * CHUNK[1],
-    zoom * CHUNK[2] * DIMENSIONS[1]
-  )
+  const pov = new B.Vector3(zoom * WIDTH, zoom * -1.5 * HEIGHT, zoom * DEPTH)
 
   const camera = new B.UniversalCamera('camera', pov, scene)
   camera.canvas = canvas
@@ -53,7 +47,7 @@ function initLight(scene) {
 function initGround(scene) {
   const ground = new B.MeshBuilder.CreateGround(
     'ground',
-    { width: DIMENSIONS[0] * CHUNK[0], height: DIMENSIONS[1] * CHUNK[2] },
+    { width: WIDTH, height: DEPTH },
     scene
   )
 
@@ -70,14 +64,14 @@ function initWater(scene) {
   var water = new B.MeshBuilder.CreateBox(
     'ground',
     {
-      width: DIMENSIONS[0] * CHUNK[0] + 1,
-      depth: DIMENSIONS[1] * CHUNK[2] + 1,
-      height: Math.floor(CHUNK[1] / 3) + 1
+      width: WIDTH + 1,
+      height: WATER_LEVEL + 1,
+      depth: DEPTH + 1
     },
     scene
   )
 
-  water.position.y += Math.floor(CHUNK[1] / 3) / 2
+  water.position.y += WATER_LEVEL / 2
 
   const blue = new B.StandardMaterial('blue', scene)
   blue.diffuseColor = new B.Color3(0, 0, 0.7)
@@ -93,7 +87,7 @@ function initWater(scene) {
   const colorfogAmbient = new B.Color3(0.8, 0.8, 0.9)
 
   scene.registerBeforeRender(() => {
-    if (scene.activeCamera.position.y <= Math.floor(CHUNK[1] / 3) + 1) {
+    if (scene.activeCamera.position.y <= WATER_LEVEL) {
       scene.fogColor = colorfogwater
       scene.fogDensity = 0.04
     } else {
@@ -112,15 +106,15 @@ function initWorld(scene) {
 export default function initScene(engine, canvas) {
   const scene = new B.Scene(engine)
 
+  scene.gravity = new B.Vector3(0, -0.9, 0)
+  scene.collisionsEnabled = true
+
   initLight(scene)
   initGround(scene)
   initWater(scene)
   initWorld(scene)
   initDraw(scene)
   initCamera(scene, canvas)
-
-  scene.gravity = new B.Vector3(0, -0.9, 0)
-  scene.collisionsEnabled = true
 
   return scene
 }

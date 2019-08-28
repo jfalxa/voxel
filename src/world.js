@@ -60,29 +60,33 @@ function createWorld(w, h, d) {
   return world
 }
 
-export function buildWorld(dimensions, chunk, scene) {
+export default function buildWorld(dimensions, chunk, scene) {
   const chunks = []
 
   const world = createWorld(
     dimensions[0] * chunk[0],
-    chunk[1],
-    dimensions[1] * chunk[2]
+    dimensions[1] * chunk[1],
+    dimensions[2] * chunk[2]
   )
 
+  const shiftX = -(dimensions[0] * chunk[0]) / 2
+  const shiftZ = -(dimensions[2] * chunk[2]) / 2
+
   for (let i = 0; i < dimensions[0]; i++)
-    for (let j = 0; j < dimensions[1]; j++) {
-      const origin = [i * chunk[0], j * chunk[2]]
-      const mesh = buildChunk(world, chunk, origin, scene)
+    for (let j = 0; j < dimensions[1]; j++)
+      for (let k = 0; k < dimensions[2]; k++) {
+        const origin = [i * chunk[0], j * chunk[1], k * chunk[2]]
+        const mesh = buildChunk(world, chunk, origin, scene)
 
-      mesh.position.x = -(dimensions[0] * chunk[0]) / 2
-      mesh.position.z = -(dimensions[1] * chunk[2]) / 2
+        mesh.position.x = shiftX
+        mesh.position.z = shiftZ
 
-      mesh.intersectionBox.position.x = origin[0] + mesh.position.x + chunk[0] / 2 // prettier-ignore
-      mesh.intersectionBox.position.z = origin[1] + mesh.position.z + chunk[2] / 2 // prettier-ignore
-      mesh.intersectionBox.position.y = chunk[1] / 2
+        mesh.intersectionBox.position.x = shiftX + origin[0] + chunk[0] / 2
+        mesh.intersectionBox.position.y = origin[1] + chunk[1] / 2
+        mesh.intersectionBox.position.z = shiftZ + origin[2] + chunk[2] / 2
 
-      chunks.push(mesh)
-    }
+        chunks.push(mesh)
+      }
 
   scene.world = world
   scene.chunks = chunks

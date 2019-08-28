@@ -33,14 +33,11 @@ function computeVertices(quads2D, world, origin, axis, depth) {
   const sec = (axis + 2) % 3
 
   return quads2D.map(([x, y, w, h]) => {
-    const o = Array(3)
-    o[axis] = depth
-    o[main] = x
-    o[sec] = y
-
     // translate to chunk origin
-    o[0] += origin[0]
-    o[2] += origin[1]
+    const o = Array(3)
+    o[axis] = origin[axis] + depth
+    o[main] = origin[main] + x
+    o[sec] = origin[sec] + y
 
     const dw = [0, 0, 0]
     dw[main] = w
