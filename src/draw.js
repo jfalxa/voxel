@@ -33,7 +33,7 @@ function getPlanePosition(scene, plane) {
 function buildCursor(scene) {
   var mat = new B.StandardMaterial('', scene)
   mat.diffuseColor = new B.Color3(1, 0, 0)
-  mat.wireframe = true
+  mat.alpha = 0.5
 
   const cursor = B.MeshBuilder.CreateBox('cursor', { size: 1 }, scene)
   cursor.isPickable = false
@@ -57,6 +57,23 @@ function resetDraw(state) {
 }
 
 function listenToMouse(scene, state) {
+  const shift = new B.Vector3(
+    scene.world.dimensions[0] / 2 - 0.5,
+    -0.5,
+    scene.world.dimensions[2] / 2 - 0.5
+  )
+
+  function updateUI(origin, dimensions) {
+    if (!origin) {
+      return (scene.infoText.text = '')
+    }
+
+    const { x, y, z } = origin.add(shift)
+    const { x: w, y: h, z: d } = dimensions
+
+    scene.infoText.text = `(${x}, ${y}, ${z}) (${w}, ${h}, ${d})`
+  }
+
   function pointerDown(info, state) {
     if (!state.origin) return
 
@@ -89,6 +106,8 @@ function listenToMouse(scene, state) {
         state.cursor.position = position.clone()
       }
     }
+
+    updateUI(state.cursor.position, state.cursor.scaling)
   }
 
   function pointerUp(info, state) {
@@ -107,6 +126,7 @@ function listenToMouse(scene, state) {
         : chunk
     )
 
+    updateUI()
     resetDraw(state)
   }
 
@@ -117,16 +137,19 @@ function listenToMouse(scene, state) {
 
     state.cursor.scaling.y = state.deltaY > 0 ? state.deltaY : -state.deltaY + 1
     state.cursor.position.y = state.deltaY > 0 ? state.origin.y :  state.origin.y + state.deltaY // prettier-ignore
+
+    updateUI(state.cursor.position, state.cursor.scaling)
   }
 
   scene.onPointerObservable.add(info => {
     if (!info.event.shiftKey) {
-      scene.activeCamera.attachControl()
+      scene.activeCamera.attachControl(scene.activeCamera.canvas)
+      updateUI()
       return resetDraw(state)
     }
 
     state.cursor.isVisible = true
-    scene.activeCamera.detachControl()
+    scene.activeCamera.detachControl(scene.activeCamera.canvas)
 
     switch (info.type) {
       case POINTERDOWN:
