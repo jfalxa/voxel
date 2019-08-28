@@ -56,12 +56,13 @@ function resetDraw(state) {
   state.cursor.isVisible = false
 }
 
+function getShift(scene) {
+  const [width, , depth] = scene.world.dimensions
+  return new B.Vector3(width / 2 - 0.5, -0.5, depth / 2 - 0.5)
+}
+
 function listenToMouse(scene, state) {
-  const shift = new B.Vector3(
-    scene.world.dimensions[0] / 2 - 0.5,
-    -0.5,
-    scene.world.dimensions[2] / 2 - 0.5
-  )
+  const shift = getShift(scene)
 
   function updateUI(origin, dimensions) {
     if (!origin) {
@@ -111,10 +112,7 @@ function listenToMouse(scene, state) {
   }
 
   function pointerUp(info, state) {
-    const [width, , depth] = scene.world.dimensions
-
-    const delta = new B.Vector3(width / 2 - 0.5, -0.5, depth / 2 - 0.5)
-    const origin = state.cursor.position.add(delta)
+    const origin = state.cursor.position.add(shift)
     const dimensions = state.cursor.scaling.clone()
 
     const shouldCarve = info.event.which === 3
