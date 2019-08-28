@@ -20,22 +20,23 @@ function computeMask(world, chunk, origin, axis, depth) {
       const a = world(...next)
       const b = world(...prev)
 
-      mask.set(i, j, a - b)
+      // differentiate quads that are coplanar but facing opposite direction
+      const orientation = a === b ? 0 : b < 2 ? 1 : -1
+
+      mask.set(i, j, orientation * Math.max(a, b))
     }
 
   return mask
 }
 
-function scanW(mask, x, y, type = mask.get(x, y)) {
+function scanW(mask, x, y, type) {
   let w
-  if (!type) return 0
   for (w = 0; mask.get(x + w, y) === type && w < mask.w - x; w++) continue
   return w
 }
 
-function scanH(mask, x, y, w) {
+function scanH(mask, x, y, w, type) {
   let h
-  const type = mask.get(x, y)
   for (h = 0; scanW(mask, x, y + h, type) >= w && h < mask.h - y; h++) continue
   return h
 }
@@ -47,10 +48,12 @@ function extractQuads(mask) {
   while ((position = mask.first())) {
     const [x, y] = position
 
-    const w = scanW(mask, x, y)
-    const h = scanH(mask, x, y, w)
+    const type = mask.get(x, y)
 
-    quads.push([x, y, w, h])
+    const w = scanW(mask, x, y, type)
+    const h = scanH(mask, x, y, w, type)
+
+    quads.push([x, y, w, h, Math.abs(type)])
     mask.clear(x, y, w, h)
   }
 

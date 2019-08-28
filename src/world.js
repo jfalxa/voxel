@@ -1,5 +1,7 @@
 import OpenSimplexNoise from 'open-simplex-noise'
 import { makeCuboid, makeRectangle } from 'fractal-noise'
+
+import { BlockTypes, WATER_LEVEL } from './config'
 import buildChunk from './chunk'
 
 function arr3d(w, h, d) {
@@ -37,13 +39,18 @@ function createWorld(w, h, d) {
     if (y < 0 || y >= h) return 0
     if (z < 0 || z >= d) return 0
 
+    if (usermap[x][y][z] > 0) return usermap[x][y][z]
+
+    const isCarved = usermap[x][y][z] === 0
     const isHighEnough = Math.abs(heightmap[x][z] + 0.3) > y / h
     const isHole = holes[x][y][z] > 0.1
+    const isEmpty = !isHighEnough || isHole || isCarved
 
-    const isFilled = usermap[x][y][z] === 1
-    const isCarved = usermap[x][y][z] === -1
+    if (isEmpty && y <= WATER_LEVEL) return BlockTypes.WATER
+    if (usermap[x][y][z] === 0) return BlockTypes.AIR
+    if (isHighEnough && !isHole) return BlockTypes.DIRT
 
-    return isFilled || (isHighEnough && !isCarved && !isHole) ? 1 : 0
+    return BlockTypes.AIR
   }
 
   world.dimensions = [w, h, d]
@@ -61,16 +68,14 @@ function createWorld(w, h, d) {
 }
 
 export default function buildWorld(dimensions, chunk, scene) {
-  const chunks = []
-
   const world = createWorld(
     dimensions[0] * chunk[0],
     dimensions[1] * chunk[1],
     dimensions[2] * chunk[2]
   )
 
-  const shiftX = -(dimensions[0] * chunk[0]) / 2
-  const shiftZ = -(dimensions[2] * chunk[2]) / 2
+  scene.world = world
+  scene.chunks = []
 
   for (let i = 0; i < dimensions[0]; i++)
     for (let j = 0; j < dimensions[1]; j++)
@@ -78,18 +83,8 @@ export default function buildWorld(dimensions, chunk, scene) {
         const origin = [i * chunk[0], j * chunk[1], k * chunk[2]]
         const mesh = buildChunk(world, chunk, origin, scene)
 
-        mesh.position.x = shiftX
-        mesh.position.z = shiftZ
-
-        mesh.intersectionBox.position.x = shiftX + origin[0] + chunk[0] / 2
-        mesh.intersectionBox.position.y = origin[1] + chunk[1] / 2
-        mesh.intersectionBox.position.z = shiftZ + origin[2] + chunk[2] / 2
-
-        chunks.push(mesh)
+        scene.chunks.push(mesh)
       }
-
-  scene.world = world
-  scene.chunks = chunks
 
   return world
 }

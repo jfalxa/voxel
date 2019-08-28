@@ -1,4 +1,5 @@
 import * as B from 'babylonjs'
+import { BlockTypes } from './config'
 
 const {
   POINTERDOWN,
@@ -115,13 +116,11 @@ function listenToMouse(scene, state) {
     const origin = state.cursor.position.add(shift)
     const dimensions = state.cursor.scaling.clone()
 
-    const shouldCarve = info.event.which === 3
-    scene.world.fill(origin, dimensions, shouldCarve ? -1 : 1)
+    const block = info.event.which === 3 ? BlockTypes.AIR : BlockTypes.DIRT
+    scene.world.fill(origin, dimensions, block)
 
     scene.chunks = scene.chunks.map(chunk =>
-      state.cursor.intersectsMesh(chunk.intersectionBox)
-        ? chunk.rebuild()
-        : chunk
+      state.cursor.intersectsMesh(chunk) ? chunk.rebuild() : chunk
     )
 
     updateUI()

@@ -4,6 +4,7 @@ import { WIDTH, HEIGHT, DEPTH, WATER_LEVEL, DIMENSIONS, CHUNK } from './config'
 
 import buildWorld from './world'
 import initDraw from './draw'
+import initMaterials from './materials'
 
 function initCamera(scene, canvas) {
   const zoom = -1.1
@@ -61,26 +62,6 @@ function initGround(scene) {
 }
 
 function initWater(scene) {
-  var water = new B.MeshBuilder.CreateBox(
-    'ground',
-    {
-      width: WIDTH + 1,
-      height: WATER_LEVEL + 1,
-      depth: DEPTH + 1
-    },
-    scene
-  )
-
-  water.position.y += WATER_LEVEL / 2
-
-  const blue = new B.StandardMaterial('blue', scene)
-  blue.diffuseColor = new B.Color3(0, 0, 0.7)
-  blue.alpha = 0.5
-  blue.backFaceCulling = false
-
-  water.material = blue
-  water.isPickable = false
-
   scene.fogMode = B.Scene.FOGMODE_EXP2
 
   const colorfogwater = new B.Color3(0.04, 0.3, 0.5)
@@ -95,8 +76,6 @@ function initWater(scene) {
       scene.fogDensity = 0.00001
     }
   })
-
-  return water
 }
 
 function initWorld(scene) {
@@ -112,6 +91,7 @@ export default function initScene(engine, canvas) {
   initLight(scene)
   initGround(scene)
   initWater(scene)
+  initMaterials(scene)
   initWorld(scene)
   initDraw(scene)
   initCamera(scene, canvas)
