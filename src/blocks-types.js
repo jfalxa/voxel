@@ -16,12 +16,17 @@ export const SAND = i++
 export const DIRT = i++
 export const GRASS = i++
 
+const DEFAULT_OPTIONS = {
+  specularColor: new B.Color3.Black()
+}
+
 export const BlockSettings = {
   [WATER]: {
     texture: water,
 
     options: {
-      alpha: 0.5
+      alpha: 0.5,
+      specularColor: new B.Color3(0, 0, 1)
     },
 
     meshOptions: {
@@ -54,6 +59,10 @@ function createMaterial(url, options = {}, scene) {
 
   texture.anisotropicFilteringLevel = 1
   material.diffuseTexture = texture
+
+  for (const prop in DEFAULT_OPTIONS) {
+    material[prop] = DEFAULT_OPTIONS[prop]
+  }
 
   for (const prop in options) {
     material[prop] = options[prop]
