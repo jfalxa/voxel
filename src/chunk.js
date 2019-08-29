@@ -3,40 +3,29 @@ import greedyQuads from './greedy'
 import { BlockSettings } from './blocks-types'
 
 const QUAD_INDICES = [0, 1, 2, 2, 3, 0]
-const CORNER_DELTAS = [[0, 0], [-1, 0], [-1, -1], [0, -1]]
 
 const DEFAULT_OPTIONS = {
   checkCollisions: true
 }
 
-function computeNormal(vertices, world, origin, axis) {
+function getDirection(vertex, world, origin, axis) {
   const main = (axis + 1) % 3
   const sec = (axis + 2) % 3
 
-  const normal = [0, 0, 0]
+  const prev = [...vertex]
+  prev[axis] += origin[axis] - 1
+  prev[main] += origin[main]
+  prev[sec] += origin[sec]
 
-  // check voxels around each corner of the quad
-  // make sure the selected voxels are inside the quad
-  vertices.forEach((vertex, i) => {
-    const prev = [...vertex]
-    prev[axis] += -1 + origin[axis]
-    prev[main] += CORNER_DELTAS[i][0] + origin[main]
-    prev[sec] += CORNER_DELTAS[i][1] + origin[sec]
+  const next = [...vertex]
+  next[axis] += origin[axis]
+  next[main] += origin[main]
+  next[sec] += origin[sec]
 
-    const next = [...vertex]
-    next[axis] += origin[axis]
-    next[main] += CORNER_DELTAS[i][0] + origin[main]
-    next[sec] += CORNER_DELTAS[i][1] + origin[sec]
+  const prevBlock = world(...prev)
+  const nextBlock = world(...next)
 
-    const prevBlock = world(...prev)
-    const nextBlock = world(...next)
-
-    normal[axis] += prevBlock > nextBlock ? 1 : -1
-  })
-
-  normal[axis] = Math.sign(normal[axis])
-
-  return normal
+  return prevBlock === nextBlock ? 0 : prevBlock > nextBlock ? 1 : -1
 }
 
 function computeVertices(quads2D, world, origin, axis, depth) {
@@ -61,20 +50,19 @@ function computeVertices(quads2D, world, origin, axis, depth) {
     const C = [o[0] + dw[0] + dh[0], o[1] + dw[1] + dh[1], o[2] + dw[2] + dh[2]]
     const D = [o[0] + dh[0], o[1] + dh[1], o[2] + dh[2]]
 
-    const normal = computeNormal([A, B, C, D], world, origin, axis)
-    const normals = [...normal, ...normal, ...normal, ...normal]
+    const direction = getDirection(A, world, origin, axis)
 
     // prettier-ignore
-    const vertices = normal[axis] < 0
+    const vertices = direction < 0
     ? [...A, ...B, ...C, ...D]
     : [...A, ...D, ...C, ...B]
 
     // prettier-ignore
-    const uvs = normal[axis] < 0 
-      ? [0, 0, w, 0, w, h, 0, h] 
-      : [0, 0, 0, h, w, h, w, 0]
+    const uvs = direction < 0 
+    ? [0, 0, w, 0, w, h, 0, h] 
+    : [0, 0, 0, h, w, h, w, 0]
 
-    return [vertices, normals, uvs, type]
+    return [vertices, uvs, type]
   })
 }
 
@@ -137,19 +125,16 @@ function buildMesh(triangles, chunk, origin, scene) {
 
   const allPositions = {}
   const allIndices = {}
-  const allNormals = {}
   const allUVs = {}
 
-  triangles.forEach(([positions, normals, uvs, type]) => {
+  triangles.forEach(([positions, uvs, type]) => {
     allPositions[type] = allPositions[type] || []
     allIndices[type] = allIndices[type] || []
-    allNormals[type] = allNormals[type] || []
     allUVs[type] = allUVs[type] || []
 
     const indices = shift(QUAD_INDICES, allPositions[type].length / 3)
     allPositions[type].push(...positions)
     allIndices[type].push(...indices)
-    allNormals[type].push(...normals)
     allUVs[type].push(...uvs)
   })
 
@@ -161,8 +146,11 @@ function buildMesh(triangles, chunk, origin, scene) {
     const vertexData = new B.VertexData()
     vertexData.indices = allIndices[type]
     vertexData.positions = allPositions[type]
-    vertexData.normals = allNormals[type]
     vertexData.uvs = allUVs[type]
+
+    const normals = []
+    B.VertexData.ComputeNormals(allPositions[type], allIndices[type], normals)
+    vertexData.normals = normals
 
     vertexData.applyToMesh(mesh)
     applyMeshOptions(mesh, type)

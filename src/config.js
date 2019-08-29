@@ -1,4 +1,4 @@
-export const DIMENSIONS = [8, 4, 8]
+export const DIMENSIONS = [4, 4, 4]
 export const CHUNK = [16, 16, 16]
 
 export const WIDTH = DIMENSIONS[0] * CHUNK[0]
