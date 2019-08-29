@@ -1,56 +1,85 @@
 import * as B from 'babylonjs'
-import waterTexture from '../assets/textures/blocks/water.png'
-import dirtTexture from '../assets/textures/blocks/dirt.png'
-import sandTexture from '../assets/textures/blocks/sand.png'
 
-export const AIR = 0
-export const WATER = 1
-export const DIRT = 2
-export const STONE = 4
+import water from '../assets/textures/blocks/water.png'
+import stone from '../assets/textures/blocks/stone.png'
+import sand from '../assets/textures/blocks/sand.png'
+import dirt from '../assets/textures/blocks/dirt.png'
+import grassSide from '../assets/textures/blocks/grass_side.png'
+import grassTop from '../assets/textures/blocks/grass_top.png'
 
-function createTexture(path, scene) {
-  const texture = new BABYLON.Texture(path, scene, false, true, BABYLON.Texture.NEAREST_SAMPLINGMODE) // prettier-ignore
+let i = 0
+
+export const AIR = i++
+export const WATER = i++
+export const STONE = i++
+export const SAND = i++
+export const DIRT = i++
+export const GRASS = i++
+
+export const BlockSettings = {
+  [WATER]: {
+    texture: water,
+
+    options: {
+      alpha: 0.5
+    },
+
+    meshOptions: {
+      isPickable: false,
+      checkCollisions: false
+    }
+  },
+
+  [STONE]: {
+    texture: stone
+  },
+
+  [SAND]: {
+    texture: sand
+  },
+
+  [DIRT]: {
+    texture: dirt
+  },
+
+  [GRASS]: {
+    texture: grassTop,
+    textures: [grassSide, [grassTop, dirt], grassSide]
+  }
+}
+
+function createMaterial(url, options = {}, scene) {
+  const material = new B.StandardMaterial('block', scene)
+  const texture = new B.Texture(url, scene, false, true, B.Texture.NEAREST_SAMPLINGMODE) // prettier-ignore
+
   texture.anisotropicFilteringLevel = 1
-  return texture
-}
+  material.diffuseTexture = texture
 
-function initWater(scene) {
-  const water = new B.StandardMaterial('water', scene)
-  water.diffuseTexture = createTexture(waterTexture, scene)
-  water.alpha = 0.5
-
-  return mesh => {
-    mesh.material = water
-    mesh.checkCollisions = false
-    mesh.isPickable = false
+  for (const prop in options) {
+    material[prop] = options[prop]
   }
-}
 
-function initDirt(scene) {
-  const dirt = new B.StandardMaterial('dirt', scene)
-  dirt.diffuseTexture = createTexture(dirtTexture, scene)
-
-  return mesh => {
-    mesh.material = dirt
-    mesh.checkCollisions = true
-  }
-}
-
-function initSand(scene) {
-  const sand = new B.StandardMaterial('sand', scene)
-  sand.diffuseTexture = createTexture(sandTexture, scene)
-
-  return mesh => {
-    mesh.material = sand
-    mesh.checkCollisions = true
-  }
+  return material
 }
 
 export default function initBlockTypes(scene) {
-  scene.blockMaterials = {
-    [WATER]: initWater(scene),
-    [DIRT]: initDirt(scene),
-    [SAND]: initSand(scene),
-    [STONE]: initStone(scene)
+  scene.blockAtlas = {}
+
+  for (const type in BlockSettings) {
+    const { texture, textures, options } = BlockSettings[type]
+
+    scene.blockAtlas[type] = {}
+
+    if (texture) {
+      scene.blockAtlas[type].material = createMaterial(texture, options, scene)
+    }
+
+    if (textures) {
+      scene.blockAtlas[type].materials = textures.map(url =>
+        Array.isArray(url)
+          ? url.map(u => createMaterial(u, options, scene))
+          : createMaterial(url, options, scene)
+      )
+    }
   }
 }

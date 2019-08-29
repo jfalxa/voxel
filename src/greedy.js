@@ -20,10 +20,14 @@ function computeMask(world, chunk, origin, axis, depth) {
       const a = world(...next)
       const b = world(...prev)
 
-      // differentiate quads that are coplanar but facing opposite direction
-      const orientation = a === b ? 0 : b < 2 ? 1 : -1
+      // check if the 2 adjacent blocks are solid to find the face type and direction
+      const ua = a > 1 ? 1 : a && !b ? 1 : 0
+      const ub = b > 1 ? 1 : b && !a ? 1 : 0
 
-      mask.set(i, j, orientation * Math.max(a, b))
+      const direction = ua - ub
+      const type = Math.max(a, b)
+
+      mask.set(i, j, direction * type)
     }
 
   return mask

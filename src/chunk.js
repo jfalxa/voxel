@@ -1,10 +1,15 @@
 import * as B from 'babylonjs'
 import greedyQuads from './greedy'
+import { BlockSettings } from './blocks-types'
 
 const QUAD_INDICES = [0, 1, 2, 2, 3, 0]
 const CORNER_DELTAS = [[0, 0], [-1, 0], [-1, -1], [0, -1]]
 
-function computeQuadNormal(vertices, world, origin, axis) {
+const DEFAULT_OPTIONS = {
+  checkCollisions: true
+}
+
+function computeNormal(vertices, world, origin, axis) {
   const main = (axis + 1) % 3
   const sec = (axis + 2) % 3
 
@@ -56,7 +61,7 @@ function computeVertices(quads2D, world, origin, axis, depth) {
     const C = [o[0] + dw[0] + dh[0], o[1] + dw[1] + dh[1], o[2] + dw[2] + dh[2]]
     const D = [o[0] + dh[0], o[1] + dh[1], o[2] + dh[2]]
 
-    const normal = computeQuadNormal([A, B, C, D], world, origin, axis)
+    const normal = computeNormal([A, B, C, D], world, origin, axis)
     const normals = [...normal, ...normal, ...normal, ...normal]
 
     // prettier-ignore
@@ -80,7 +85,6 @@ function simplifyMesh(world, chunk, origin) {
   for (let axis = 0; axis < 3; axis++)
     for (let depth = 0; depth <= chunk[axis]; depth++) {
       const quads2D = greedyQuads(world, chunk, origin, axis, depth)
-
       const quads3D = computeVertices(quads2D, world, origin, axis, depth)
 
       triangles.push(...quads3D)
@@ -117,6 +121,17 @@ function buildContainer(chunk, origin, scene) {
   return container
 }
 
+function applyMeshOptions(mesh, type) {
+  const options =
+    'meshOptions' in BlockSettings[type]
+      ? { ...DEFAULT_OPTIONS, ...BlockSettings[type].meshOptions }
+      : DEFAULT_OPTIONS
+
+  for (const prop in options) {
+    mesh[prop] = options[prop]
+  }
+}
+
 function buildMesh(triangles, chunk, origin, scene) {
   const container = buildContainer(chunk, origin, scene)
 
@@ -139,10 +154,9 @@ function buildMesh(triangles, chunk, origin, scene) {
   })
 
   Object.keys(allPositions).forEach(type => {
-    const applyBlockType = scene.blockMaterials[type]
-
     const mesh = new B.Mesh('blocks' + type, scene)
     mesh.parent = container
+    mesh.material = scene.blockAtlas[type].material
 
     const vertexData = new B.VertexData()
     vertexData.indices = allIndices[type]
@@ -151,7 +165,7 @@ function buildMesh(triangles, chunk, origin, scene) {
     vertexData.uvs = allUVs[type]
 
     vertexData.applyToMesh(mesh)
-    applyBlockType(mesh)
+    applyMeshOptions(mesh, type)
 
     mesh.position.x = -chunk[0] / 2
     mesh.position.y = -chunk[1] / 2

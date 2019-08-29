@@ -43,14 +43,22 @@ function createWorld(w, h, d) {
     if (y === 0) return BlockTypes.SAND
     if (usermap[x][y][z] > 0) return usermap[x][y][z]
 
+    const availableHeight =
+      Math.abs(heightmap[x][z]) - (y - WATER_LEVEL / 2) / h
+
     const isCarved = usermap[x][y][z] === 0
-    const isHighEnough = Math.abs(heightmap[x][z] + 0.3) > y / h
-    const isHole = holes[x][y][z] > 0.1
-    const isEmpty = !isHighEnough || isHole || isCarved
+    const isHole = holes[x][y][z] > 0.2
+    const isEmpty = availableHeight < 0 || isHole || isCarved
 
     if (isEmpty && y <= WATER_LEVEL) return BlockTypes.WATER
-    if (usermap[x][y][z] === 0) return BlockTypes.AIR
-    if (isHighEnough && !isHole) return BlockTypes.DIRT
+
+    if (isCarved) return BlockTypes.AIR
+
+    if (availableHeight < 0) return BlockTypes.AIR
+    if (availableHeight <= 1 / h)
+      return y < WATER_LEVEL - 1 ? BlockTypes.SAND : BlockTypes.GRASS
+    if (availableHeight < 0.08) return BlockTypes.DIRT
+    if (availableHeight < 1) return BlockTypes.STONE
 
     return BlockTypes.AIR
   }
