@@ -4,7 +4,7 @@ import { WIDTH, HEIGHT, DEPTH, WATER_LEVEL, DIMENSIONS, CHUNK } from './config'
 
 import buildWorld from './world'
 import initDraw from './draw'
-import initMaterials from './blocks-types'
+import initBlockTypes from './blocks-types'
 
 function initCamera(scene, canvas) {
   const zoom = -1.1
@@ -31,23 +31,6 @@ function initLight(scene) {
   return new B.HemisphericLight('light1', new B.Vector3(0, 1, 0), scene)
 }
 
-function initGround(scene) {
-  const ground = new B.MeshBuilder.CreateGround(
-    'ground',
-    { width: WIDTH, height: DEPTH },
-    scene
-  )
-
-  const beige = new B.StandardMaterial('beige', scene)
-  beige.diffuseColor = new B.Color3(0.96, 0.96, 0.86)
-
-  ground.position.y -= 0.01
-  ground.material = beige
-  ground.checkCollisions = true
-
-  return ground
-}
-
 function initWater(scene) {
   scene.fogMode = B.Scene.FOGMODE_EXP2
 
@@ -55,7 +38,7 @@ function initWater(scene) {
   const colorfogAmbient = new B.Color3(0.8, 0.8, 0.9)
 
   scene.registerBeforeRender(() => {
-    if (scene.activeCamera.position.y <= WATER_LEVEL) {
+    if (scene.activeCamera.position.y <= WATER_LEVEL + 1) {
       scene.fogColor = colorfogwater
       scene.fogDensity = 0.04
     } else {
@@ -76,9 +59,8 @@ export default function initScene(engine, canvas) {
   scene.collisionsEnabled = true
 
   initLight(scene)
-  initGround(scene)
   initWater(scene)
-  initMaterials(scene)
+  initBlockTypes(scene)
   initWorld(scene)
   initDraw(scene)
   initCamera(scene, canvas)

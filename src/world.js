@@ -40,6 +40,7 @@ function createWorld(w, h, d) {
     if (y < 0 || y >= h) return 0
     if (z < 0 || z >= d) return 0
 
+    if (y === 0) return BlockTypes.SAND
     if (usermap[x][y][z] > 0) return usermap[x][y][z]
 
     const isCarved = usermap[x][y][z] === 0

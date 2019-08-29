@@ -61,10 +61,15 @@ function computeVertices(quads2D, world, origin, axis, depth) {
 
     // prettier-ignore
     const vertices = normal[axis] < 0
-      ? [...A, ...B, ...C, ...D]
-      : [...A, ...D, ...C, ...B]
+    ? [...A, ...B, ...C, ...D]
+    : [...A, ...D, ...C, ...B]
 
-    return [vertices, normals, type]
+    // prettier-ignore
+    const uvs = normal[axis] < 0 
+      ? [0, 0, w, 0, w, h, 0, h] 
+      : [0, 0, 0, h, w, h, w, 0]
+
+    return [vertices, normals, uvs, type]
   })
 }
 
@@ -118,16 +123,19 @@ function buildMesh(triangles, chunk, origin, scene) {
   const allPositions = {}
   const allIndices = {}
   const allNormals = {}
+  const allUVs = {}
 
-  triangles.forEach(([positions, normals, type]) => {
+  triangles.forEach(([positions, normals, uvs, type]) => {
     allPositions[type] = allPositions[type] || []
     allIndices[type] = allIndices[type] || []
     allNormals[type] = allNormals[type] || []
+    allUVs[type] = allUVs[type] || []
 
     const indices = shift(QUAD_INDICES, allPositions[type].length / 3)
     allPositions[type].push(...positions)
     allIndices[type].push(...indices)
     allNormals[type].push(...normals)
+    allUVs[type].push(...uvs)
   })
 
   Object.keys(allPositions).forEach(type => {
@@ -140,6 +148,7 @@ function buildMesh(triangles, chunk, origin, scene) {
     vertexData.indices = allIndices[type]
     vertexData.positions = allPositions[type]
     vertexData.normals = allNormals[type]
+    vertexData.uvs = allUVs[type]
 
     vertexData.applyToMesh(mesh)
     applyBlockType(mesh)
