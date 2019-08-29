@@ -1,7 +1,8 @@
 import OpenSimplexNoise from 'open-simplex-noise'
 import { makeCuboid, makeRectangle } from 'fractal-noise'
 
-import { BlockTypes, WATER_LEVEL } from './config'
+import { WATER_LEVEL } from './config'
+import * as BlockTypes from './blocks-types'
 import buildChunk from './chunk'
 
 function arr3d(w, h, d) {

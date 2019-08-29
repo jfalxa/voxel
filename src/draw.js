@@ -1,5 +1,5 @@
 import * as B from 'babylonjs'
-import { BlockTypes } from './config'
+import * as BlockTypes from './blocks-types'
 
 const {
   POINTERDOWN,

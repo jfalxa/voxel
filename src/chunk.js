@@ -131,11 +131,10 @@ function buildMesh(triangles, chunk, origin, scene) {
   })
 
   Object.keys(allPositions).forEach(type => {
+    const applyBlockType = scene.blockMaterials[type]
+
     const mesh = new B.Mesh('blocks' + type, scene)
     mesh.parent = container
-    mesh.material = scene.blockMaterials[type]
-    mesh.checkCollisions = type > 1
-    mesh.isPickable = type > 1
 
     const vertexData = new B.VertexData()
     vertexData.indices = allIndices[type]
@@ -143,6 +142,7 @@ function buildMesh(triangles, chunk, origin, scene) {
     vertexData.normals = allNormals[type]
 
     vertexData.applyToMesh(mesh)
+    applyBlockType(mesh)
 
     mesh.position.x = -chunk[0] / 2
     mesh.position.y = -chunk[1] / 2

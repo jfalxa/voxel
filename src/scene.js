@@ -4,7 +4,7 @@ import { WIDTH, HEIGHT, DEPTH, WATER_LEVEL, DIMENSIONS, CHUNK } from './config'
 
 import buildWorld from './world'
 import initDraw from './draw'
-import initMaterials from './materials'
+import initMaterials from './blocks-types'
 
 function initCamera(scene, canvas) {
   const zoom = -1.1
@@ -17,26 +17,12 @@ function initCamera(scene, canvas) {
   camera.setTarget(new B.Vector3(0.5, 0.5, 0.5))
 
   camera.checkCollisions = true
-  // camera.applyGravity = true
-
   camera.ellipsoid = new B.Vector3(1, 2, 1)
 
   camera.keysUp.push(87)
   camera.keysRight.push(68)
   camera.keysDown.push(83)
   camera.keysLeft.push(65)
-
-  scene.onKeyboardObservable.add(info => {
-    switch (info.type) {
-      case B.KeyboardEventTypes.KEYDOWN:
-      case B.KeyboardEventTypes.KEYUP:
-        if (info.event.key === ' ') {
-          scene.gravity.y *= -1
-          scene.render()
-        }
-        break
-    }
-  })
 
   return camera
 }
@@ -55,6 +41,7 @@ function initGround(scene) {
   const beige = new B.StandardMaterial('beige', scene)
   beige.diffuseColor = new B.Color3(0.96, 0.96, 0.86)
 
+  ground.position.y -= 0.01
   ground.material = beige
   ground.checkCollisions = true
 
