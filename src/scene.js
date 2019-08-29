@@ -16,8 +16,11 @@ function initCamera(scene, canvas) {
   camera.attachControl(canvas, false)
   camera.setTarget(new B.Vector3(0.5, 0.5, 0.5))
 
+  camera.minZ = 0
+
   camera.checkCollisions = true
-  camera.ellipsoid = new B.Vector3(1, 2, 1)
+  camera.ellipsoid = new BABYLON.Vector3(0.49, 1, 0.49)
+  camera.ellipsoidOffset = new BABYLON.Vector3(0, 0.5, 0)
 
   camera.keysUp.push(87)
   camera.keysRight.push(68)
