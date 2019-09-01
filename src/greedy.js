@@ -17,8 +17,8 @@ function computeMask(world, chunk, origin, axis, depth) {
       next[main] = prev[main] = origin[main] + i
       next[sec] = prev[sec] = origin[sec] + j
 
-      const a = world(...next)
-      const b = world(...prev)
+      const a = world(next[0], next[1], next[2])
+      const b = world(prev[0], prev[1], prev[2])
 
       // check if the 2 adjacent blocks are solid to find the face type and direction
       const ua = a > 1 ? 1 : a && !b ? 1 : 0
@@ -33,29 +33,38 @@ function computeMask(world, chunk, origin, axis, depth) {
   return mask
 }
 
-function scanW(mask, x, y, type) {
+function scanW(mask, x, y, type, max = Infinity) {
   let w
-  for (w = 0; mask.get(x + w, y) === type && w < mask.w - x; w++) continue
+  for (w = 0; mask.get(x + w, y) === type && w < mask.w - x && w < max; w++)
+    continue
   return w
 }
 
 function scanH(mask, x, y, w, type) {
   let h
-  for (h = 0; scanW(mask, x, y + h, type) >= w && h < mask.h - y; h++) continue
+  for (h = 1; scanW(mask, x, y + h, type, w) === w && h < mask.h - y; h++)
+    continue
   return h
 }
 
 function extractQuads(mask) {
-  let position
   const quads = []
 
-  while ((position = mask.first())) {
-    const [x, y] = position
+  let position
+  let nextX = 0
+  let nextY = 0
+
+  while ((position = mask.next(nextX, nextY))) {
+    const x = position[0]
+    const y = position[1]
 
     const type = mask.get(x, y)
 
     const w = scanW(mask, x, y, type)
     const h = scanH(mask, x, y, w, type)
+
+    nextX = x + w
+    nextY = y
 
     quads.push([x, y, w, h, Math.abs(type)])
     mask.clear(x, y, w, h)

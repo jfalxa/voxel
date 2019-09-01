@@ -18,15 +18,17 @@ export default class Mat2 {
     this.data[this.index(x, y)] = value
   }
 
-  first() {
-    const index = this.data.findIndex(Boolean)
+  next(fromX = 0, fromY = 0) {
+    const fromIndex = this.index(fromX, fromY)
 
-    if (index === -1) return
+    for (let i = fromIndex; i < this.data.length; i++) {
+      if (this.data[i] !== 0) {
+        const x = i % this.w
+        const y = Math.floor(i / this.w)
 
-    const x = index % this.w
-    const y = Math.floor(index / this.w)
-
-    return [x, y]
+        return [x, y]
+      }
+    }
   }
 
   clear(x, y, w, h) {
