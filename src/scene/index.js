@@ -45,7 +45,7 @@ export default function initScene(engine, canvas) {
   const world = buildWorld(DIMENSIONS, CHUNK)
   const chunks = buildChunks(world, blockTypes, DIMENSIONS, CHUNK, scene)
 
-  initDraw(world, chunks, ui, scene)
+  initDraw(world, chunks, ui, canvas, scene)
 
   return scene
 }

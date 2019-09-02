@@ -58,7 +58,7 @@ function resetDraw(state) {
   state.cursor.isVisible = false
 }
 
-function listenToMouse(state, world, chunks, ui, scene) {
+function listenToMouse(state, world, chunks, ui, canvas, scene) {
   function updateUI(origin, dimensions) {
     if (!origin) {
       return (ui.info.text = '')
@@ -70,7 +70,7 @@ function listenToMouse(state, world, chunks, ui, scene) {
     ui.info.text = `(${x}, ${y}, ${z}) (${w}, ${h}, ${d})`
   }
 
-  function pointerDown(state) {
+  function pointerDown(state, info) {
     if (!state.origin) return
 
     state.drawing = true
@@ -141,15 +141,15 @@ function listenToMouse(state, world, chunks, ui, scene) {
     updateUI(state.cursor.position, state.cursor.scaling)
   }
 
-  scene.onPointerObservable.add(info => {
+  function onPointer(info) {
     if (!info.event.shiftKey) {
-      scene.activeCamera.attachControl()
+      // scene.activeCamera.attachControl(canvas)
       updateUI()
       return resetDraw(state)
     }
 
     state.cursor.isVisible = true
-    scene.activeCamera.detachControl()
+    scene.activeCamera.detachControl(canvas)
 
     switch (info.type) {
       case POINTERDOWN:
@@ -161,10 +161,12 @@ function listenToMouse(state, world, chunks, ui, scene) {
       case POINTERWHEEL:
         return pointerWheel(state, info)
     }
-  })
+  }
+
+  scene.onPointerObservable.add(onPointer)
 }
 
-export default function drawTool(world, chunks, ui, scene) {
+export default function drawTool(world, chunks, ui, canvas, scene) {
   const state = {
     drawing: false,
     origin: null,
@@ -173,5 +175,5 @@ export default function drawTool(world, chunks, ui, scene) {
     cursor: buildCursor(scene)
   }
 
-  listenToMouse(state, world, chunks, ui, scene)
+  listenToMouse(state, world, chunks, ui, canvas, scene)
 }

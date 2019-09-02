@@ -66,7 +66,7 @@ export default function buildWorld(dimensions, chunk) {
     return BlockTypes.AIR
   }
 
-  world.fill = (origin, dimensions, value) => {
+  function fill(origin, dimensions, value) {
     const minX = Math.max(0, origin.x)
     const minY = Math.max(0, origin.y)
     const minZ = Math.max(0, origin.z)
@@ -81,6 +81,8 @@ export default function buildWorld(dimensions, chunk) {
           usermap[x][y][z] = value
         }
   }
+
+  world.fill = fill
 
   return world
 }

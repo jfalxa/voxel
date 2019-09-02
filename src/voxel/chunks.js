@@ -26,7 +26,7 @@ function buildChunk(world, blockTypes, chunk, origin, scene) {
   const container = buildContainer(chunk, origin, scene)
   const mesh = buildMesh(container, world, blockTypes, chunk, origin, scene)
 
-  mesh.rebuild = () => {
+  mesh.rebuild = function rebuild() {
     const newMesh = buildChunk(world, blockTypes, chunk, origin, scene)
     newMesh.position = mesh.position
 
