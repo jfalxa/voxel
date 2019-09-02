@@ -1,10 +1,7 @@
 import * as B from 'babylonjs'
-import { ORTHOGONAL_MODE } from '../config'
+import { ORTHO_MODE, ORTHO_SIZE } from '../config'
 
-const ZOOM = 1
-const ORTHO_ZOOM = 0.9
-
-function buildIsometricCamera(dimensions, chunk, scene, ortho) {
+function computeSettings(dimensions, chunk) {
   const size = new B.Vector3(
     dimensions[0] * chunk[0],
     dimensions[1] * chunk[1],
@@ -12,34 +9,69 @@ function buildIsometricCamera(dimensions, chunk, scene, ortho) {
   )
 
   const target = size.scale(1 / 2)
-  const pov = size.multiplyByFloats(-1, 1, -1).scale(ZOOM)
-  pov.y = target.y
+  const position = size.multiplyByFloats(-1, 1, -1)
+  position.y = target.y
 
-  const distance = B.Vector3.Distance(target, pov)
-  pov.y += Math.atan(Math.sin(Math.PI / 3)) * distance
+  const distance = B.Vector3.Distance(target, position)
+  position.y += distance / Math.sqrt(2)
 
-  const camera = new B.UniversalCamera('camera', pov, scene)
+  return { position, target, size }
+}
 
-  if (ORTHOGONAL_MODE) {
-    const offset = Math.max(size.x, size.y, size.z) * ORTHO_ZOOM
+function buildIsometricCamera(settings, canvas, scene) {
+  const position = settings.position
+  const target = settings.target
 
-    camera.mode = B.Camera.ORTHOGRAPHIC_CAMERA
-    camera.orthoLeft = -offset
-    camera.orthoRight = offset
-    camera.orthoTop = offset
-    camera.orthoBottom = -offset
-  }
+  const camera = new B.ArcRotateCamera('camera', 0, 0, 0, target, scene)
+  camera.position = position
+  camera.panningSensibility = 0
+  camera.inertia = 0.5
 
-  camera.setTarget(target)
-  camera.inputs.removeMouse()
+  camera.lowerBetaLimit = camera.beta
+  camera.upperBetaLimit = camera.beta
+
+  const offset = Math.max(settings.size.x, settings.size.y, settings.size.z)
+  const offsetX = (offset * canvas.width) / ORTHO_SIZE
+  const offsetY = (offset * canvas.height) / ORTHO_SIZE
+
+  camera.mode = B.Camera.ORTHOGRAPHIC_CAMERA
+  camera.orthoLeft = -offsetX
+  camera.orthoRight = offsetX
+  camera.orthoTop = offsetY
+  camera.orthoBottom = -offsetY
+
+  camera.detachControl(canvas)
+
+  scene.onKeyboardObservable.add(info => {
+    const e = info.event
+
+    if (event.type !== 'keydown') return
+
+    if (e.key === 'a' || e.keyCode === 37) {
+      camera.inertialAlphaOffset = Math.PI / 4
+    } else if (e.key === 'd' || e.keyCode === 39) {
+      camera.inertialAlphaOffset = -(Math.PI / 4)
+    }
+  })
+
+  return camera
+}
+
+function buildFreeCamera(settings, canvas, scene) {
+  const camera = new B.UniversalCamera('camera', settings.position, scene)
+
+  camera.attachControl(canvas, false)
+  camera.setTarget(settings.target)
 
   return camera
 }
 
 export default function initCamera(dimensions, chunk, canvas, scene) {
-  const camera = buildIsometricCamera(dimensions, chunk, scene)
+  const settings = computeSettings(dimensions, chunk)
 
-  camera.attachControl(canvas, false)
+  const camera = ORTHO_MODE
+    ? buildIsometricCamera(settings, canvas, scene)
+    : buildFreeCamera(settings, canvas, scene)
 
   camera.minZ = 0
 
