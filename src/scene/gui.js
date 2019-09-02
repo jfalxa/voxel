@@ -1,7 +1,8 @@
 import * as GUI from 'babylonjs-gui'
 
-export default function initGUI(scene) {
-  const gui = GUI.AdvancedDynamicTexture.CreateFullscreenUI('gui')
+export default function buildGUI(scene) {
+  const ui = {}
+  const uiTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI('gui')
 
   const info = new GUI.TextBlock()
   info.text = ''
@@ -15,9 +16,8 @@ export default function initGUI(scene) {
   info.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT
   info.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM
 
-  gui.addControl(info)
+  ui.info = info
+  uiTexture.addControl(info)
 
-  scene.infoText = info
-
-  return gui
+  return ui
 }

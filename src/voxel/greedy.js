@@ -1,4 +1,4 @@
-import Mat2 from './mat2'
+import Mat2 from '../utils/mat2'
 
 function computeMask(world, chunk, origin, axis, depth) {
   const main = (axis + 1) % 3

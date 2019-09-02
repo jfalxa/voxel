@@ -1,6 +1,7 @@
 import * as B from 'babylonjs'
+
+import { WIDTH, HEIGHT, DEPTH } from './config'
 import initScene from './scene'
-import initGUI from './gui'
 
 const root = document.getElementById('root')
 const canvas = document.createElement('canvas')
@@ -15,8 +16,12 @@ const engine = new B.Engine(canvas, true, {
   stencil: true
 })
 
+const start = performance.now()
+
 const scene = initScene(engine, canvas)
-const gui = initGUI(scene)
+
+const end = performance.now()
+console.log('ready:', `${WIDTH}x${HEIGHT}x${DEPTH}`, end - start)
 
 // run the render loop
 engine.runRenderLoop(() => {

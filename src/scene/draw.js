@@ -1,5 +1,5 @@
 import * as B from 'babylonjs'
-import * as BlockTypes from './blocks-types'
+import * as BlockTypes from '../voxel/block-types'
 
 const {
   POINTERDOWN,
@@ -23,11 +23,12 @@ function getCursorPosition(scene) {
   return pos.hit ? snap(pos.pickedPoint) : null
 }
 
-function getPlanePosition(scene, plane) {
+function getPlanePosition(plane, scene) {
   if (!plane) return null
 
   const ray = scene.createPickingRay(scene.pointerX, scene.pointerY)
   const distance = ray.intersectsPlane(plane)
+
   return snap(ray.origin.addInPlace(ray.direction.scaleInPlace(distance)))
 }
 
@@ -57,26 +58,19 @@ function resetDraw(state) {
   state.cursor.isVisible = false
 }
 
-function getShift(scene) {
-  const [width, , depth] = scene.world.dimensions
-  return new B.Vector3(width / 2 - 0.5, -0.5, depth / 2 - 0.5)
-}
-
-function listenToMouse(scene, state) {
-  const shift = getShift(scene)
-
+function listenToMouse(state, world, chunks, ui, scene) {
   function updateUI(origin, dimensions) {
     if (!origin) {
-      return (scene.infoText.text = '')
+      return (ui.info.text = '')
     }
 
-    const { x, y, z } = origin.add(shift)
+    const { x, y, z } = origin.subtractFromFloats(0.5, 0.5, 0.5)
     const { x: w, y: h, z: d } = dimensions
 
-    scene.infoText.text = `(${x}, ${y}, ${z}) (${w}, ${h}, ${d})`
+    ui.info.text = `(${x}, ${y}, ${z}) (${w}, ${h}, ${d})`
   }
 
-  function pointerDown(info, state) {
+  function pointerDown(state) {
     if (!state.origin) return
 
     state.drawing = true
@@ -87,9 +81,9 @@ function listenToMouse(scene, state) {
     )
   }
 
-  function pointerMove(info, state) {
+  function pointerMove(state) {
     if (state.drawing) {
-      const position = getPlanePosition(scene, state.plane)
+      const position = getPlanePosition(state.plane, scene)
 
       if (position) {
         const delta = position.subtract(state.origin)
@@ -112,56 +106,65 @@ function listenToMouse(scene, state) {
     updateUI(state.cursor.position, state.cursor.scaling)
   }
 
-  function pointerUp(info, state) {
-    const origin = state.cursor.position.add(shift)
+  function pointerUp(state, info) {
+    const origin = state.cursor.position.subtractFromFloats(0.5, 0.5, 0.5)
     const dimensions = state.cursor.scaling.clone()
 
     const block = info.event.which === 3 ? BlockTypes.AIR : BlockTypes.DIRT
-    scene.world.fill(origin, dimensions, block)
+    world.fill(origin, dimensions, block)
 
-    scene.chunks = scene.chunks.map(chunk =>
-      state.cursor.intersectsMesh(chunk) ? chunk.rebuild() : chunk
-    )
+    for (let i = 0; i < chunks.length; i++) {
+      chunks[i] = state.cursor.intersectsMesh(chunks[i])
+        ? chunks[i].rebuild()
+        : chunks[i]
+    }
 
     updateUI()
     resetDraw(state)
   }
 
-  function pointerWheel(info, state) {
+  function pointerWheel(state, info) {
     if (!state.drawing) return
 
     state.deltaY -= Math.sign(info.event.deltaY)
 
-    state.cursor.scaling.y = state.deltaY > 0 ? state.deltaY : -state.deltaY + 1
-    state.cursor.position.y = state.deltaY > 0 ? state.origin.y :  state.origin.y + state.deltaY // prettier-ignore
+    // prettier-ignore
+    state.cursor.scaling.y = state.deltaY > 0 
+      ? state.deltaY 
+      : -state.deltaY + 1
+
+    // prettier-ignore
+    state.cursor.position.y = state.deltaY > 0  
+      ? state.origin.y 
+      : state.origin.y + state.deltaY
 
     updateUI(state.cursor.position, state.cursor.scaling)
   }
 
   scene.onPointerObservable.add(info => {
     if (!info.event.shiftKey) {
-      scene.activeCamera.attachControl(scene.activeCamera.canvas)
+      scene.activeCamera.attachControl()
       updateUI()
       return resetDraw(state)
     }
 
     state.cursor.isVisible = true
-    scene.activeCamera.detachControl(scene.activeCamera.canvas)
+    scene.activeCamera.detachControl()
 
     switch (info.type) {
       case POINTERDOWN:
-        return pointerDown(info, state)
+        return pointerDown(state, info)
       case POINTERMOVE:
-        return pointerMove(info, state)
+        return pointerMove(state, info)
       case POINTERUP:
-        return pointerUp(info, state)
+        return pointerUp(state, info)
       case POINTERWHEEL:
-        return pointerWheel(info, state)
+        return pointerWheel(state, info)
     }
   })
 }
 
-export default function drawTool(scene) {
+export default function drawTool(world, chunks, ui, scene) {
   const state = {
     drawing: false,
     origin: null,
@@ -170,5 +173,5 @@ export default function drawTool(scene) {
     cursor: buildCursor(scene)
   }
 
-  listenToMouse(scene, state)
+  listenToMouse(state, world, chunks, ui, scene)
 }

@@ -1,9 +1,8 @@
 import OpenSimplexNoise from 'open-simplex-noise'
 import { makeCuboid, makeRectangle } from 'fractal-noise'
 
-import { WATER_LEVEL } from './config'
-import * as BlockTypes from './blocks-types'
-import buildChunk from './chunk'
+import { WATER_LEVEL } from '../config'
+import * as BlockTypes from './block-types'
 
 function arr3d(w, h, d) {
   const arr = Array(w)
@@ -16,7 +15,11 @@ function arr3d(w, h, d) {
   return arr
 }
 
-function createWorld(w, h, d) {
+export default function buildWorld(dimensions, chunk) {
+  const w = dimensions[0] * chunk[0]
+  const h = dimensions[1] * chunk[1]
+  const d = dimensions[2] * chunk[2]
+
   const simplex = new OpenSimplexNoise('ach so richtig genau')
   const noise2D = simplex.noise2D.bind(simplex)
   const noise3D = simplex.noise3D.bind(simplex)
@@ -63,38 +66,21 @@ function createWorld(w, h, d) {
     return BlockTypes.AIR
   }
 
-  world.dimensions = [w, h, d]
-
   world.fill = (origin, dimensions, value) => {
-    // prettier-ignore
-    for (let x = Math.max(0, origin.x); x < Math.min(w, origin.x + dimensions.x); x++)
-      for (let y = Math.max(0, origin.y); y < Math.min(h, origin.y + dimensions.y); y++) 
-        for (let z = Math.max(0, origin.z); z < Math.min(d, origin.z + dimensions.z); z++) { 
-            usermap[x][y][z] = value
-          }
+    const minX = Math.max(0, origin.x)
+    const minY = Math.max(0, origin.y)
+    const minZ = Math.max(0, origin.z)
+
+    const maxX = Math.min(w, origin.x + dimensions.x)
+    const maxY = Math.min(h, origin.y + dimensions.y)
+    const maxZ = Math.min(d, origin.z + dimensions.z)
+
+    for (let x = minX; x < maxX; x++)
+      for (let y = minY; y < maxY; y++)
+        for (let z = minZ; z < maxZ; z++) {
+          usermap[x][y][z] = value
+        }
   }
-
-  return world
-}
-
-export default function buildWorld(dimensions, chunk, scene) {
-  const world = createWorld(
-    dimensions[0] * chunk[0],
-    dimensions[1] * chunk[1],
-    dimensions[2] * chunk[2]
-  )
-
-  scene.world = world
-  scene.chunks = []
-
-  for (let i = 0; i < dimensions[0]; i++)
-    for (let j = 0; j < dimensions[1]; j++)
-      for (let k = 0; k < dimensions[2]; k++) {
-        const origin = [i * chunk[0], j * chunk[1], k * chunk[2]]
-        const mesh = buildChunk(world, chunk, origin, scene)
-
-        scene.chunks.push(mesh)
-      }
 
   return world
 }
