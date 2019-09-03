@@ -21,8 +21,7 @@ export const BlockSettings = {
 
     options: {
       alpha: 0.5,
-      specularColor: new B.Color3(0, 0, 1),
-      backFaceCulling: false
+      specularColor: new B.Color3(0, 0, 1)
     },
 
     meshOptions: {

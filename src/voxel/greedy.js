@@ -1,10 +1,10 @@
-import Mat2 from '../utils/mat2'
+import Mask from '../utils/mask'
 
 function computeMask(world, chunk, origin, axis, depth) {
   const main = (axis + 1) % 3
   const sec = (axis + 2) % 3
 
-  const mask = new Mat2(chunk[main], chunk[sec])
+  const mask = new Mask(chunk[main], chunk[sec], Int8Array)
 
   const prev = [0, 0, 0]
   const next = [0, 0, 0]
