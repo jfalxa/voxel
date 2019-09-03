@@ -22,12 +22,12 @@ function buildContainer(chunk, origin, scene) {
   return container
 }
 
-function buildChunk(world, blockTypes, chunk, origin, scene) {
+function buildChunk(world, materials, chunk, origin, scene) {
   const container = buildContainer(chunk, origin, scene)
-  const mesh = buildMesh(container, world, blockTypes, chunk, origin, scene)
+  const mesh = buildMesh(container, world, materials, chunk, origin, scene)
 
   mesh.rebuild = function rebuild() {
-    const newMesh = buildChunk(world, blockTypes, chunk, origin, scene)
+    const newMesh = buildChunk(world, materials, chunk, origin, scene)
     newMesh.position = mesh.position
 
     mesh.dispose()
@@ -39,14 +39,14 @@ function buildChunk(world, blockTypes, chunk, origin, scene) {
 }
 
 // prettier-ignore
-export default function buildChunks(world, blockTypes, dimensions, chunk, scene) {
+export default function buildChunks(world, materials, dimensions, chunk, scene) {
   const chunks = []
 
   for (let i = 0; i < dimensions[0]; i++)
     for (let j = 0; j < dimensions[1]; j++)
       for (let k = 0; k < dimensions[2]; k++) {
         const origin = [i * chunk[0], j * chunk[1], k * chunk[2]]
-        const mesh = buildChunk(world, blockTypes, chunk, origin, scene)
+        const mesh = buildChunk(world, materials, chunk, origin, scene)
 
         chunks.push(mesh)
       }

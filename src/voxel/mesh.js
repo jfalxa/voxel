@@ -1,6 +1,6 @@
 import * as B from 'babylonjs'
 import greedyQuads from './greedy'
-import { BlockSettings } from './block-types'
+import { BlockSettings } from '../world/block-types'
 
 const QUAD_INDICES = [0, 1, 2, 2, 3, 0]
 

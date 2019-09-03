@@ -1,5 +1,5 @@
 import * as B from 'babylonjs'
-import { ORTHO_MODE, ORTHO_SIZE } from '../config'
+import { ORTHO_MODE } from '../config'
 
 function computeSettings(dimensions, chunk) {
   const size = new B.Vector3(
@@ -31,8 +31,10 @@ function buildIsometricCamera(settings, canvas, scene) {
   camera.upperBetaLimit = camera.beta
 
   const offset = Math.max(settings.size.x, settings.size.y, settings.size.z)
-  const offsetX = (offset * canvas.width) / ORTHO_SIZE
-  const offsetY = (offset * canvas.height) / ORTHO_SIZE
+  const available = Math.min(canvas.width, canvas.height)
+
+  const offsetX = offset * (canvas.width / available)
+  const offsetY = offset * (canvas.height / available)
 
   camera.mode = B.Camera.ORTHOGRAPHIC_CAMERA
   camera.orthoLeft = -offsetX

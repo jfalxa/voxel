@@ -1,5 +1,5 @@
 import * as B from 'babylonjs'
-import * as BlockTypes from '../voxel/block-types'
+import * as BlockTypes from '../world/block-types'
 
 const {
   POINTERDOWN,

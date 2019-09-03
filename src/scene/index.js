@@ -5,9 +5,9 @@ import { WATER_LEVEL, DIMENSIONS, CHUNK } from '../config'
 import initCamera from './camera'
 import initDraw from './draw'
 import buildGUI from './gui'
-import buildWorld from '../voxel/world'
+import buildWorld from '../world'
 import buildChunks from '../voxel/chunks'
-import buildBlockTypes from '../voxel/block-types'
+import buildMaterials from '../voxel/materials'
 
 function initLight(scene) {
   return new B.HemisphericLight('light1', new B.Vector3(0, 1, 0), scene)
@@ -41,9 +41,9 @@ export default function initScene(engine, canvas) {
   initCamera(DIMENSIONS, CHUNK, canvas, scene)
 
   const ui = buildGUI(scene)
-  const blockTypes = buildBlockTypes(scene)
+  const materials = buildMaterials(scene)
   const world = buildWorld(DIMENSIONS, CHUNK)
-  const chunks = buildChunks(world, blockTypes, DIMENSIONS, CHUNK, scene)
+  const chunks = buildChunks(world, materials, DIMENSIONS, CHUNK, scene)
 
   initDraw(world, chunks, ui, canvas, scene)
 

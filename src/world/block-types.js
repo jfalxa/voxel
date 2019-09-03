@@ -15,10 +15,6 @@ export const SAND = i++
 export const DIRT = i++
 export const GRASS = i++
 
-const DEFAULT_OPTIONS = {
-  specularColor: new B.Color3.Black()
-}
-
 export const BlockSettings = {
   [WATER]: {
     texture: water,
@@ -50,40 +46,4 @@ export const BlockSettings = {
   [GRASS]: {
     texture: grass
   }
-}
-
-function createMaterial(settings, scene) {
-  const material = new B.StandardMaterial('block', scene)
-  const options = settings.options || {}
-
-  const texture = new B.Texture(
-    settings.texture,
-    scene,
-    false,
-    true,
-    B.Texture.NEAREST_SAMPLINGMODE
-  )
-
-  texture.anisotropicFilteringLevel = 1
-  material.diffuseTexture = texture
-
-  for (const prop in DEFAULT_OPTIONS) {
-    material[prop] = DEFAULT_OPTIONS[prop]
-  }
-
-  for (const prop in options) {
-    material[prop] = options[prop]
-  }
-
-  return material
-}
-
-export default function buildBlockTypes(scene) {
-  const blockTypes = {}
-
-  for (const type in BlockSettings) {
-    blockTypes[type] = createMaterial(BlockSettings[type], scene)
-  }
-
-  return blockTypes
 }
