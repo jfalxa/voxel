@@ -8,7 +8,7 @@ const canvas = document.createElement('canvas')
 
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
-canvas.oncontextmenu = false
+canvas.oncontextmenu = () => false
 
 root.appendChild(canvas)
 
