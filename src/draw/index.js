@@ -1,8 +1,9 @@
 import * as BABYLON from 'babylonjs'
-import { GridMaterial } from '@babylonjs/materials'
 
-import * as Colors from './config/colors'
-import { SIZE } from './config/grid'
+import { SIZE } from '../config/grid'
+import { constrain } from '../utils/grid'
+import buildCursor from './cursor'
+import buildGrid from './grid'
 
 const {
   POINTERDOWN,
@@ -13,52 +14,7 @@ const {
 
 const DRAW_NORMAL = new BABYLON.Vector3(0, 1, 0)
 
-function snap(vec3) {
-  return new BABYLON.Vector3(
-    Math.round(vec3.x) + 0.5,
-    Math.round(vec3.y) + 0.5,
-    Math.round(vec3.z) + 0.5
-  )
-}
-
-function buildCursor(scene) {
-  var mat = new BABYLON.StandardMaterial('', scene)
-  mat.diffuseColor = new BABYLON.Color3(1, 0, 0)
-  mat.alpha = 0.5
-
-  const cursor = BABYLON.MeshBuilder.CreateBox('cursor', { size: 1 }, scene)
-  cursor.isPickable = false
-  cursor.material = mat
-
-  cursor.setPivotPoint(new BABYLON.Vector3(-0.5, -0.5, -0.5))
-
-  return cursor
-}
-
-function buildGrid(scene) {
-  const grid = BABYLON.MeshBuilder.CreateGround(
-    'grid',
-    {
-      width: SIZE,
-      height: SIZE
-    },
-    scene
-  )
-
-  grid.position.x = SIZE / 2
-  grid.position.z = SIZE / 2
-
-  grid.material = new GridMaterial('groundMaterial', scene)
-  grid.material.opacity = 0.9
-  grid.material.backFaceCulling = false
-  grid.material.lineColor = Colors.Light1
-  grid.material.majorUnitFrequency = 3
-  grid.material.gridRatio = 1
-
-  return grid
-}
-
-export default class DrawTool {
+class Draw {
   constructor(scene, onChange) {
     this.state = {
       drawing: false,
@@ -86,15 +42,12 @@ export default class DrawTool {
     this.cursor.scaling.y = 1
     this.cursor.scaling.z = 1
     this.cursor.isVisible = false
-
-    this.grid.isVisible = false
   }
 
   lockControls(locked) {
     if (locked) {
       this.scene.activeCamera.detachControl()
       this.cursor.isVisible = true
-      this.grid.isVisible = true
     } else {
       this.scene.activeCamera.attachControl()
       this.reset()
@@ -104,7 +57,7 @@ export default class DrawTool {
   getCursorPosition() {
     const { pointerX, pointerY } = this.scene
     const info = this.scene.pick(pointerX, pointerY)
-    return info.hit ? snap(info.pickedPoint) : null
+    return info.hit ? constrain(info.pickedPoint) : null
   }
 
   getPlanePosition() {
@@ -114,8 +67,9 @@ export default class DrawTool {
 
     const ray = this.scene.createPickingRay(pointerX, pointerY)
     const distance = ray.intersectsPlane(this.plane)
+    const position = ray.origin.addInPlace(ray.direction.scaleInPlace(distance))
 
-    return snap(ray.origin.addInPlace(ray.direction.scaleInPlace(distance)))
+    return constrain(position, true)
   }
 
   onPointerDown() {
@@ -128,7 +82,7 @@ export default class DrawTool {
       DRAW_NORMAL
     )
 
-    this.grid.position.y = this.state.origin.y - 0.5
+    this.grid.position.y = this.state.origin.y
   }
 
   onPointerMove() {
@@ -136,20 +90,28 @@ export default class DrawTool {
       const position = this.getPlanePosition()
 
       if (position) {
-        const delta = position.subtract(this.state.origin)
+        const origin = this.state.origin
 
-        this.cursor.scaling.x = delta.x > 0 ? delta.x : -delta.x + 1
-        this.cursor.scaling.z = delta.z > 0 ? delta.z : -delta.z + 1
+        const delta = position.subtract(origin)
 
-        this.cursor.position.x = delta.x < 0 ? position.x : this.state.origin.x // prettier-ignore
-        this.cursor.position.z = delta.z < 0 ? position.z : this.state.origin.z // prettier-ignore
+        this.cursor.position.x = delta.x >= 0 ? origin.x : position.x
+        this.cursor.position.z = delta.z >= 0 ? origin.z : position.z
+
+        this.cursor.scaling.x = delta.x >= 0 ? delta.x : -delta.x + 1
+        this.cursor.scaling.z = delta.z >= 0 ? delta.z : -delta.z + 1
+
+        this.cursor.position.x += 0.5
+        this.cursor.position.z += 0.5
+
+        this.cursor.scaling.x = Math.max(1, this.cursor.scaling.x)
+        this.cursor.scaling.z = Math.max(1, this.cursor.scaling.z)
       }
     } else {
       const position = this.getCursorPosition()
 
       if (position) {
         this.state.origin = position.clone()
-        this.cursor.position = position.clone()
+        this.cursor.position = position.addInPlaceFromFloats(0.5, 0.5, 0.5)
       }
     }
   }
@@ -172,23 +134,25 @@ export default class DrawTool {
   onPointerWheel(info) {
     if (info.event.shiftKey) {
       this.grid.position.y -= Math.sign(info.event.deltaY)
-      this.grid.position.y = Math.max(0, Math.min(this.grid.position.y, 48))
+      this.grid.position.y = Math.max(0, Math.min(this.grid.position.y, SIZE - 1)) // prettier-ignore
     }
 
     if (!this.state.drawing) return
 
     this.state.deltaY -= Math.sign(info.event.deltaY)
-    this.state.deltaY = Math.max(-this.state.origin.y + 0.5, this.state.deltaY)
 
     // prettier-ignore
-    this.cursor.scaling.y = this.state.deltaY > 0 
-      ? this.state.deltaY + 1
-      : -this.state.deltaY + 1
+    this.state.deltaY = this.state.deltaY > 0
+      ? Math.min(SIZE - this.state.origin.y - 1, this.state.deltaY)
+      : Math.max(-this.state.origin.y, this.state.deltaY)
 
     // prettier-ignore
     this.cursor.position.y = this.state.deltaY > 0  
       ? this.state.origin.y 
       : this.state.origin.y + this.state.deltaY
+
+    this.cursor.position.y += 0.5
+    this.cursor.scaling.y = Math.abs(this.state.deltaY) + 1
   }
 
   onPointer(info) {
@@ -205,4 +169,8 @@ export default class DrawTool {
         return this.onPointerWheel(info)
     }
   }
+}
+
+export default function initDraw(scene, onChange) {
+  return new Draw(scene, onChange)
 }

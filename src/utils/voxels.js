@@ -8,12 +8,20 @@ export default class Voxels {
     this.width = width
     this.height = height
     this.depth = depth
-
+    this.dimensions = [width, height, depth]
     this.data = new Int16Array(width * height * depth)
   }
 
   index(x, y, z) {
     return x + this.width * (y + this.height * z)
+  }
+
+  has(x, y, z) {
+    const validX = 0 <= x && x < this.width
+    const validY = 0 <= y && y < this.height
+    const validZ = 0 <= z && z < this.depth
+
+    return validX && validY && validZ
   }
 
   /**
@@ -24,7 +32,7 @@ export default class Voxels {
    * @returns {number}
    */
   get(x, y, z) {
-    return this.data[this.index(x, y, z)]
+    return this.has(x, y, z) ? this.data[this.index(x, y, z)] : 0
   }
 
   /**
@@ -34,7 +42,9 @@ export default class Voxels {
    * @param {number} value
    */
   set(x, y, z, value) {
-    this.data[this.index(x, y, z)] = value
+    if (this.has(x, y, z)) {
+      this.data[this.index(x, y, z)] = value
+    }
   }
 
   /**

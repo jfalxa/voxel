@@ -1,1 +1,2 @@
-export const SIZE = 48
+export const SIZE = 100
+export const FREQUENCY = 5
