@@ -31,7 +31,11 @@ export default function initScene(engine) {
 
     const { vertexData } = buildVertexData(mesh.voxels)
 
-    vertexData.applyToMesh(mesh)
+    if (vertexData.indices.length === 0) {
+      mesh.geometry.dispose()
+    } else {
+      vertexData.applyToMesh(mesh, true)
+    }
   })
 
   return scene

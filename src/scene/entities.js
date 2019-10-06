@@ -18,7 +18,7 @@ export function createCamera(scene) {
     'camera',
     (5 * Math.PI) / 4,
     Math.PI / 3,
-    SIZE,
+    SIZE * 2,
     new BABYLON.Vector3(SIZE / 2, 0, SIZE / 2),
     scene
   )
