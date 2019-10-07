@@ -1,17 +1,21 @@
+import { Vector3 } from '@babylonjs/core'
 import { SIZE } from '../config/grid'
+
+const MIN = new Vector3.Zero()
+const MAX = new Vector3(SIZE - 1, SIZE - 1, SIZE - 1)
+const MAX_DIM = new Vector3(SIZE, SIZE, SIZE)
 
 export function snap(vec3) {
   return new BABYLON.Vector3(
-    Math.round(vec3.x),
-    Math.round(vec3.y),
-    Math.round(vec3.z)
+    Math.floor(vec3.x),
+    Math.floor(vec3.y),
+    Math.floor(vec3.z)
   )
 }
 
 export function constrain(position, isDimensions) {
-  const max = isDimensions ? SIZE : SIZE - 1
+  const snapped = snap(position)
+  const max = isDimensions ? MAX_DIM : MAX
 
-  return snap(position)
-    .maximizeInPlaceFromFloats(0, 0, 0)
-    .minimizeInPlaceFromFloats(max, max, max)
+  return Vector3.Clamp(snapped, MIN, max)
 }

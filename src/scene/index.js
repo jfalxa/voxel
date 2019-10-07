@@ -18,15 +18,15 @@ export default function initScene(engine) {
 
   const mesh = Entities.createVoxels(scene)
 
-  initDraw(scene, ({ origin, dimensions, clear }) => {
+  initDraw(scene, ({ position, dimensions, value }) => {
     mesh.voxels.fill(
-      origin.x,
-      origin.y,
-      origin.z,
+      position.x,
+      position.y,
+      position.z,
       dimensions.x,
       dimensions.y,
       dimensions.z,
-      clear ? 0 : 1
+      value
     )
 
     const { vertexData } = buildVertexData(mesh.voxels)
@@ -37,6 +37,9 @@ export default function initScene(engine) {
       vertexData.applyToMesh(mesh, true)
     }
   })
+
+  window.scene = scene
+  window.BABYLON = BABYLON
 
   return scene
 }

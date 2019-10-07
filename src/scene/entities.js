@@ -55,6 +55,7 @@ export function createGround(scene) {
   ground.material.backFaceCulling = false
 
   ground.position.x = SIZE / 2
+  ground.position.y = -0.01
   ground.position.z = SIZE / 2
 
   return ground
