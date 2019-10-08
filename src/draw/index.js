@@ -115,7 +115,7 @@ export class Draw {
     this.cursor.scaling.y = box.dimensions.y
     this.cursor.scaling.z = box.dimensions.z
 
-    this.grid.position.y = box.position.y
+    this.grid.position.y = box.position.y + box.dimensions.y - 1
 
     this.cursor.isVisible = true
   }

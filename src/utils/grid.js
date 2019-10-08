@@ -5,16 +5,18 @@ const MIN = new Vector3.Zero()
 const MAX = new Vector3(SIZE - 1, SIZE - 1, SIZE - 1)
 const MAX_DIM = new Vector3(SIZE, SIZE, SIZE)
 
-export function snap(vec3) {
+export function snap(vec3, isRound) {
+  const predicate = isRound ? Math.round : Math.floor
+
   return new BABYLON.Vector3(
-    Math.floor(vec3.x),
-    Math.floor(vec3.y),
-    Math.floor(vec3.z)
+    predicate(vec3.x),
+    predicate(vec3.y),
+    predicate(vec3.z)
   )
 }
 
-export function constrain(position, isDimensions) {
-  const snapped = snap(position)
+export function constrain(position, isDimensions, isRound) {
+  const snapped = snap(position, isRound)
   const max = isDimensions ? MAX_DIM : MAX
 
   return Vector3.Clamp(snapped, MIN, max)

@@ -26,7 +26,7 @@ export default class MouseInput {
   getCursorPosition() {
     const { pointerX, pointerY } = this.draw.scene
     const info = this.draw.scene.pick(pointerX, pointerY)
-    return info.hit ? constrain(info.pickedPoint) : null
+    return info.hit ? constrain(info.pickedPoint, false, true) : null
   }
 
   getPlanePosition() {
@@ -38,7 +38,7 @@ export default class MouseInput {
     const distance = ray.intersectsPlane(this.plane)
     const position = ray.origin.addInPlace(ray.direction.scaleInPlace(distance))
 
-    return constrain(position, true)
+    return constrain(position, true, true)
   }
 
   onPointerDown() {
@@ -47,7 +47,6 @@ export default class MouseInput {
     if (!state.origin) return
 
     const keyboard = this.draw.keyboard
-
     keyboard.disabled = true
 
     this.plane = BABYLON.Plane.FromPositionAndNormal(state.origin, UP)
@@ -77,10 +76,11 @@ export default class MouseInput {
 
   onPointerWheel(event) {
     const state = this.draw.state
+    const position = state.target ? 'target' : state.origin ? 'origin' : null
 
-    if (state.target) {
-      state.target.y -= Math.sign(event.deltaY)
-      state.target = constrain(state.target)
+    if (position) {
+      state[position].y -= Math.sign(event.deltaY)
+      state[position] = constrain(state[position])
 
       this.draw.update()
     }
