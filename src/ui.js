@@ -12,8 +12,8 @@ message.style.boxSizing = 'border-box'
 message.style.background = 'rgba(73, 78, 74, 0.8)'
 
 message.innerHTML = `
-<section id="size-controls>
-  <h2>Size controls</h2>
+<section id="size-controls">
+  <h2 style="text-decoration: underline;">Size controls</h2>
 
   <ul>
     <li>slide the Range input to change the base size of a block</li>
@@ -21,18 +21,18 @@ message.innerHTML = `
 </section>
 
 <section id="mouse-controls">
-  <h2>Mouse controls</h2>
+  <h2 style="text-decoration: underline; margin-top: 16px;">Mouse controls</h2>
 
-  <h4>Free mode</h4>
+  <h3>Free mode</h3>
   <ul>
     <li>Drag mouse around to rotate the camera</li>
     <li>use Ctrl + drag mouse to move the camera</li>
     <li>use Scroll to manage zoom level</li>
+    <li>hold down Shift to enable draw mode</li>
   </ul>
 
-  <h4>Draw mode</h4>
+  <h3>Draw mode</h3>
   <ul>
-    <li>hold down Shift to start drawing</li>
     <li>move the mouse around to select a starting point</li>
     <li>use Scroll to adjust the vertical position of the starting point</li>
     <li>press LeftClick and drag the mouse to apply the covered area</li>
@@ -40,24 +40,25 @@ message.innerHTML = `
     <li>while clicking, use Scroll to adjust the height of the area</li>
     <li>release Shift before releasing click to cancel the current operation</li>
   </ul>
+
+
 </section>
-
 <section id="keyboard-controls">
-  <h2>Keyboard controls</h2>
+  <h2 style="text-decoration: underline; margin-top: 16px;">Keyboard controls</h2>
 
-  <h4>Free mode</h4>
+  <h3>Free mode</h3>
   <ul>
     <li>use ArrowKeys to rotate the camera</li>
     <li>use Ctrl + ArrowsKeys to move the camera</li>
+    <li>press Enter to switch to draw mode</li>
   </ul>
 
-  <h4>Draw mode</h4>
+  <h3>Draw mode</h3>
   <ul>
-    <li>press Enter to start drawing</li>
     <li>move the starting point around with the arrow keys</li>
     <li>use Shift + ArrowUp/ArrowDown to adjust the vertical position</li>
     <li>press Space to toggle scaling mode (controls the opposite corner of the covered area)</li>
-    <li>press Enter to apply the covered area </li>
+    <li>press Enter to apply the covered area and go back to free mode</li>
     <li>press Delete to remove the covered area</li>
     <li>press Escape to cancel the current operation</li>
   </ul>
@@ -108,9 +109,9 @@ range.addEventListener('change', e => {
   rangeValue.innerHTML = value > 1 ? value + '³ blocks' : '1 block'
 })
 
-document.body.appendChild(message)
-document.body.appendChild(help)
 document.body.appendChild(range)
 document.body.appendChild(rangeValue)
+document.body.appendChild(message)
+document.body.appendChild(help)
 
 export { range, rangeValue, help, message }
