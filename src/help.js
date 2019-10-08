@@ -17,7 +17,7 @@ message.innerHTML = `
 
   <h4>Free mode</h4>
   <ul>
-    <li>click and drag mouse around to rotate the camera</li>
+    <li>Drag mouse around to rotate the camera</li>
     <li>use Ctrl + drag mouse to move the camera</li>
     <li>use Scroll to manage zoom level</li>
   </ul>
@@ -39,8 +39,8 @@ message.innerHTML = `
 
   <h4>Free mode</h4>
   <ul>
-    <li>click and drag mouse around to rotate the camera</li>
-    <li>use Ctrl + drag mouse to move the camera</li>
+    <li>use ArrowKeys to rotate the camera</li>
+    <li>use Ctrl + ArrowsKeys to move the camera</li>
   </ul>
 
   <h4>Draw mode</h4>
