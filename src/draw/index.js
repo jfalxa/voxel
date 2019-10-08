@@ -1,5 +1,7 @@
 import { Scene } from '@babylonjs/core'
 
+import { range } from '../ui'
+import { constrain } from '../utils/grid'
 import buildCursor from './cursor'
 import buildGrid from './grid'
 import MouseInput from './input/mouse'
@@ -24,6 +26,12 @@ export class Draw {
 
     this.cursor = buildCursor(scene)
     this.grid = buildGrid(scene)
+
+    this.size = 1
+
+    range.addEventListener('change', e => {
+      this.size = parseInt(e.target.value, 10)
+    })
   }
 
   init(origin = this.state.origin) {
@@ -61,9 +69,13 @@ export class Draw {
     return locked
   }
 
+  constrain(position, isDimension, isRound) {
+    return constrain(position, this.size, isDimension, isRound)
+  }
+
   box() {
     const position = new BABYLON.Vector3.Zero()
-    const dimensions = new BABYLON.Vector3.One()
+    const dimensions = new BABYLON.Vector3.Zero()
 
     const origin = this.state.origin
     const target = this.state.target || origin
@@ -74,13 +86,13 @@ export class Draw {
     position.y = delta.y >= 0 ? origin.y : target.y
     position.z = delta.z >= 0 ? origin.z : target.z
 
-    dimensions.x = delta.x >= 0 ? delta.x : -delta.x + 1
-    dimensions.y = delta.y >= 0 ? delta.y : -delta.y + 1
-    dimensions.z = delta.z >= 0 ? delta.z : -delta.z + 1
+    dimensions.x = delta.x >= 0 ? delta.x : -delta.x + this.size
+    dimensions.y = delta.y >= 0 ? delta.y : -delta.y + this.size
+    dimensions.z = delta.z >= 0 ? delta.z : -delta.z + this.size
 
-    dimensions.x = Math.max(1, dimensions.x)
-    dimensions.y = Math.max(1, dimensions.y)
-    dimensions.z = Math.max(1, dimensions.z)
+    dimensions.x = Math.max(this.size, dimensions.x)
+    dimensions.y = Math.max(this.size, dimensions.y)
+    dimensions.z = Math.max(this.size, dimensions.z)
 
     return { position, dimensions }
   }
@@ -115,7 +127,7 @@ export class Draw {
     this.cursor.scaling.y = box.dimensions.y
     this.cursor.scaling.z = box.dimensions.z
 
-    this.grid.position.y = box.position.y + box.dimensions.y - 1
+    this.grid.position.y = box.position.y + box.dimensions.y - this.size
 
     this.cursor.isVisible = true
   }

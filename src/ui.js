@@ -56,19 +56,53 @@ message.innerHTML = `
 </section>
 `
 
-const button = document.createElement('button')
-button.id = 'help'
-button.innerHTML = '?'
+const help = document.createElement('button')
+help.id = 'help'
+help.innerHTML = '?'
 
-button.style.position = 'absolute'
-button.style.top = '16px'
-button.style.left = '16px'
+help.style.position = 'absolute'
+help.style.top = '16px'
+help.style.left = '16px'
+help.style.width = '24px'
+help.style.height = '24px'
 
-button.onclick = () => {
+help.onclick = () => {
   const isDisplayed = message.style.display === 'block'
-  button.innerHTML = isDisplayed ? '?' : 'X'
+  help.innerHTML = isDisplayed ? '?' : 'X'
   message.style.display = isDisplayed ? 'none' : 'block'
 }
 
+const range = document.createElement('input')
+range.id = 'size-range'
+range.type = 'range'
+range.value = 1
+range.step = 1
+range.min = 1
+range.max = 5
+range.style.position = 'absolute'
+range.style.top = '16px'
+range.style.left = '56px'
+range.style.width = '64px'
+range.style.height = '24px'
+range.style.margin = 0
+
+const rangeValue = document.createElement('span')
+rangeValue.innerHTML = '1 block'
+rangeValue.style.position = 'absolute'
+rangeValue.style.top = '16px'
+rangeValue.style.left = '136px'
+rangeValue.style.color = 'white'
+rangeValue.style.height = '24px'
+rangeValue.style.lineHeight = '24px'
+
+range.addEventListener('change', e => {
+  const value = e.target.value
+  rangeValue.innerHTML = value > 1 ? value + '³ blocks' : '1 block'
+})
+
 document.body.appendChild(message)
-document.body.appendChild(button)
+document.body.appendChild(help)
+document.body.appendChild(range)
+document.body.appendChild(rangeValue)
+
+export { range, rangeValue, help, message }

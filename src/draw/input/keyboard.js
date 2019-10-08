@@ -1,8 +1,7 @@
 import * as BABYLON from 'babylonjs'
 
 import { Draw } from '../'
-import { SIZE } from '../../config/grid'
-import { constrain } from '../../utils/grid'
+import { CENTER } from '../../config/grid'
 
 const { KEYDOWN, KEYUP } = BABYLON.KeyboardEventTypes
 
@@ -10,9 +9,9 @@ const UP = new BABYLON.Vector3.Up()
 const DOWN = new BABYLON.Vector3.Down()
 const FORWARD = new BABYLON.Vector3.Forward()
 
-function normalize(vector) {
+function normalize(vector, size) {
   const max = Math.max(Math.abs(vector.x), Math.abs(vector.z))
-  return vector.scale(1 / 2 / max)
+  return vector.scale(size / 2 / max)
 }
 
 export default class KeyboardInput {
@@ -39,13 +38,13 @@ export default class KeyboardInput {
     this.draw.mouse.disabled = true
 
     if (!this.reference) {
-      const origin = new BABYLON.Vector3(SIZE / 2, 0, SIZE / 2)
-      this.reference = origin.addInPlaceFromFloats(0.5, 0, 0.5)
+      this.reference = CENTER.clone().addInPlaceFromFloats(0.5, 0, 0.5)
     }
 
     this.ref.position = this.reference
+    const origin = this.draw.constrain(this.reference)
 
-    this.draw.init(constrain(this.reference))
+    this.draw.init(origin)
     this.draw.update()
   }
 
@@ -53,7 +52,7 @@ export default class KeyboardInput {
     const state = this.draw.state
 
     this.reference.addInPlace(delta)
-    const position = constrain(this.reference)
+    const position = this.draw.constrain(this.reference)
 
     if (state.target) {
       state.target = position
@@ -64,6 +63,7 @@ export default class KeyboardInput {
 
   getDirection() {
     const scene = this.draw.scene
+    const size = this.draw.size
 
     const vertical = scene.activeCamera.getDirection(FORWARD)
     const horizontal = BABYLON.Vector3.Cross(vertical, UP).negate()
@@ -72,27 +72,28 @@ export default class KeyboardInput {
     horizontal.y = 0
 
     return {
-      vertical: normalize(vertical),
-      horizontal: normalize(horizontal)
+      vertical: normalize(vertical, size),
+      horizontal: normalize(horizontal, size)
     }
   }
 
   onKeyboardDraw(event) {
     if (!this.draw.state.origin) return
 
+    const size = this.draw.size
     const direction = this.getDirection()
 
     switch (event.code) {
       case 'ArrowUp':
         // prettier-ignore
         return event.shiftKey
-          ? this.move(UP)
+          ? this.move(UP.scale(size))
           : this.move(direction.vertical)
 
       case 'ArrowDown':
         // prettier-ignore
         return event.shiftKey
-          ? this.move(DOWN)
+          ? this.move(DOWN.scale(size))
           : this.move(direction.vertical.negate())
 
       case 'ArrowRight':

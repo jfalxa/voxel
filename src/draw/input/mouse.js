@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs'
 
 import { Draw } from '../'
-import { constrain } from '../../utils/grid'
+import { CENTER } from '../../config/grid'
 
 const {
   POINTERDOWN,
@@ -26,19 +26,30 @@ export default class MouseInput {
   getCursorPosition() {
     const { pointerX, pointerY } = this.draw.scene
     const info = this.draw.scene.pick(pointerX, pointerY)
-    return info.hit ? constrain(info.pickedPoint, false, true) : null
+
+    if (!info.hit) return null
+
+    if (info.pickedMesh.id === 'grid') {
+      info.pickedPoint.y += 0.5
+    }
+
+    return this.draw.constrain(info.pickedPoint)
   }
 
   getPlanePosition() {
-    if (!this.plane) return null
-
     const scene = this.draw.scene
+    const state = this.draw.state
+
+    const source = BABYLON.Vector3.Maximize(state.origin, state.target)
+    const plane = BABYLON.Plane.FromPositionAndNormal(source, UP)
 
     const ray = scene.createPickingRay(scene.pointerX, scene.pointerY)
-    const distance = ray.intersectsPlane(this.plane)
+    const distance = ray.intersectsPlane(plane)
     const position = ray.origin.addInPlace(ray.direction.scaleInPlace(distance))
 
-    return constrain(position, true, true)
+    position.y = state.target.y
+
+    return this.draw.constrain(position, true)
   }
 
   onPointerDown() {
@@ -48,8 +59,6 @@ export default class MouseInput {
 
     const keyboard = this.draw.keyboard
     keyboard.disabled = true
-
-    this.plane = BABYLON.Plane.FromPositionAndNormal(state.origin, UP)
 
     this.draw.toggleScaling(true)
     this.draw.update()
@@ -79,9 +88,8 @@ export default class MouseInput {
     const position = state.target ? 'target' : state.origin ? 'origin' : null
 
     if (position) {
-      state[position].y -= Math.sign(event.deltaY)
-      state[position] = constrain(state[position])
-
+      state[position].y -= Math.sign(event.deltaY) * this.draw.size
+      state[position] = this.draw.constrain(state[position])
       this.draw.update()
     }
   }
