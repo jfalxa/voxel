@@ -1,6 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
-
 import buildScene from './scene'
+
+import './help'
 
 const root = document.getElementById('root')
 const canvas = document.createElement('canvas')
