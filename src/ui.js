@@ -12,6 +12,14 @@ message.style.boxSizing = 'border-box'
 message.style.background = 'rgba(73, 78, 74, 0.8)'
 
 message.innerHTML = `
+<section id="size-controls>
+  <h2>Size controls</h2>
+
+  <ul>
+    <li>slide the Range input to change the base size of a block</li>
+  </ul>
+</section>
+
 <section id="mouse-controls">
   <h2>Mouse controls</h2>
 
