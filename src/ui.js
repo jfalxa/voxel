@@ -36,7 +36,7 @@ message.innerHTML = `
     <li>move the mouse around to select a starting point</li>
     <li>use Scroll to adjust the vertical position of the starting point</li>
     <li>press LeftClick and drag the mouse to apply the covered area</li>
-    <li>press RightClick and drag the mouse to remove the covered area</li>
+    <li>press RightClick or hold Ctrl and drag the mouse to remove the covered area</li>
     <li>while clicking, use Scroll to adjust the height of the area</li>
     <li>release Shift before releasing click to cancel the current operation</li>
   </ul>

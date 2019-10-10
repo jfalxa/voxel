@@ -78,8 +78,10 @@ export default class MouseInput {
 
   onPointerUp(event) {
     if (this.draw.state.origin) {
+      const clear = event.which === 3 || event.ctrlKey
+
       this.plane = null
-      this.draw.apply(event.which === 3 ? 0 : 1)
+      this.draw.apply(clear ? 0 : 1)
     }
   }
 
