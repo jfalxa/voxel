@@ -37,21 +37,35 @@ function computeMask(voxels, axis, level) {
 }
 
 function scanWidth(mask, x, y, type, max = Infinity) {
-  let w
-  for (w = 0; mask.get(x + w, y) === type && w < mask.width - x && w < max; w++)
-    continue
-  return w
+  let width = 0
+  let shouldContinue = mask.get(x, y) === type
+
+  while (shouldContinue) {
+    width++
+
+    const hasSameType = mask.get(x + width, y) === type
+    const hasRoom = width < mask.width - x && width < max
+
+    shouldContinue = hasSameType && hasRoom
+  }
+
+  return width
 }
 
-function scanHeight(mask, x, y, w, type) {
-  let h
-  for (
-    h = 1;
-    scanWidth(mask, x, y + h, type, w) === w && h < mask.height - y;
-    h++
-  )
-    continue
-  return h
+function scanHeight(mask, x, y, width, type) {
+  let height = 0
+  let shouldContinue = true
+
+  while (shouldContinue) {
+    height++
+
+    const hasSameWidth = scanWidth(mask, x, y + height, type, width) === width
+    const hasRoom = height < mask.height - y
+
+    shouldContinue = hasSameWidth && hasRoom
+  }
+
+  return height
 }
 
 function computeQuads(mask) {
