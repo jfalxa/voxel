@@ -29,7 +29,13 @@ export default function initScene(engine) {
       value
     )
 
+    let start, end
+
+    start = performance.now()
     const { vertexData } = buildVertexData(mesh.voxels)
+    end = performance.now()
+
+    console.log('Computed in:', (end - start).toFixed(3))
 
     if (vertexData.indices.length === 0) {
       mesh.geometry.dispose()
