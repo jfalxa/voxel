@@ -10,6 +10,7 @@ message.style.overflow = 'auto'
 message.style.padding = '32px 64px'
 message.style.boxSizing = 'border-box'
 message.style.background = 'rgba(73, 78, 74, 0.8)'
+message.style.color = 'white'
 
 message.innerHTML = `
 <section id="size-controls">

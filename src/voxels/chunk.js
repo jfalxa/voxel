@@ -1,10 +1,17 @@
 export default class Chunk {
   /**
+   * @param {object} world
+   * @param {number} x
+   * @param {number} y
    * @param {number} width
    * @param {number} height
    * @param {number} depth
    */
-  constructor(width, height, depth) {
+  constructor(world, x, z, width, height, depth) {
+    this.dirty = false
+    this.world = world
+    this.x = x
+    this.z = z
     this.width = width
     this.height = height
     this.depth = depth
@@ -24,6 +31,16 @@ export default class Chunk {
     return validX && validY && validZ
   }
 
+  // peek outside the chunk
+  peek(x, y, z) {
+    if (this.has(x, y, z)) return this.get(x, y, z)
+
+    const wx = this.x - Math.floor(this.width / 2) + x
+    const wz = this.z - Math.floor(this.depth / 2) + z
+
+    return this.world.get(wx, y, wz)
+  }
+
   /**
    * @param {number} x
    * @param {number} y
@@ -32,7 +49,7 @@ export default class Chunk {
    * @returns {number}
    */
   get(x, y, z) {
-    return this.has(x, y, z) ? this.data[this.index(x, y, z)] : 0
+    return this.has(x, y, z) ? this.data[this.index(x, y, z)] : null
   }
 
   /**
@@ -44,6 +61,7 @@ export default class Chunk {
   set(x, y, z, value) {
     if (this.has(x, y, z)) {
       this.data[this.index(x, y, z)] = value
+      this.dirty = true
     }
   }
 

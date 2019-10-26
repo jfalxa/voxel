@@ -13,6 +13,13 @@ function computeIndices(offset) {
   return indices
 }
 
+function centerPositions(chunk, positions) {
+  for (let i = 0; i < positions.length; i += 3) {
+    positions[i] -= chunk.width / 2
+    positions[i + 2] -= chunk.depth / 2
+  }
+}
+
 function groupByType(triangles) {
   const types = {}
 
@@ -64,6 +71,9 @@ export default function buildVertexData(chunk) {
     vertexData.indices.push(...indices)
     vertexData.uvs.push(...uvs)
   }
+
+  // center vertices inside chunk
+  centerPositions(chunk, vertexData.positions)
 
   BABYLON.VertexData.ComputeNormals(
     vertexData.positions,

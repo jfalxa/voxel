@@ -1,9 +1,9 @@
 import * as BABYLON from '@babylonjs/core'
-import { GridMaterial } from '@babylonjs/materials'
 
-import { SIZE, FREQUENCY } from '../config/grid'
+import { SIZE, FREQUENCY, CENTER } from '../config/grid'
 import * as Colors from '../config/colors'
-import Voxels from '../voxels'
+import World from '../voxels/world'
+import WorldMesh from '../mesher'
 
 export function createLight(scene) {
   return new BABYLON.HemisphericLight(
@@ -18,8 +18,8 @@ export function createCamera(scene) {
     'camera',
     (5 * Math.PI) / 4,
     Math.PI / 3,
-    SIZE * 2,
-    new BABYLON.Vector3(SIZE / 2, 0, SIZE / 2),
+    128,
+    CENTER,
     scene
   )
 
@@ -55,20 +55,15 @@ export function createGround(scene) {
   ground.material.backFaceCulling = false
 
   ground.position.x = SIZE / 2
-  ground.position.y = -0.01
+  ground.position.y = -0.1
   ground.position.z = SIZE / 2
 
   return ground
 }
 
-export function createVoxels(scene) {
-  const mesh = new BABYLON.Mesh('voxels', scene)
-  mesh.voxels = new Voxels(10, 10)
-
-  mesh.material = new GridMaterial('voxels-material', scene)
-  mesh.material.mainColor = Colors.Light2
-  mesh.material.lineColor = Colors.Light1
-  mesh.material.majorUnitFrequency = FREQUENCY
+export function createWorld(scene) {
+  const world = new World(FREQUENCY * 4, FREQUENCY * 4)
+  const mesh = new WorldMesh(world, scene)
 
   return mesh
 }

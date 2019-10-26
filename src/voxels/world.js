@@ -6,12 +6,12 @@ const MAX_SIZE = Math.floor(Math.sqrt(Number.MAX_SAFE_INTEGER))
 
 const CHUNK_HEIGHT = 128
 
-export default class Voxels {
+export default class World {
   constructor(chunkWidth, chunkDepth) {
     this.chunks = {}
-    this.dimensions = [chunkWidth, CHUNK_HEIGHT, chunkDepth]
 
     this.chunkWidth = chunkWidth
+    this.chunkHeight = CHUNK_HEIGHT
     this.chunkDepth = chunkDepth
   }
 
@@ -19,7 +19,14 @@ export default class Voxels {
     const chunkCenter = this.getChunkCenter(x, z)
     const index = this.getChunkIndex(chunkCenter[0], chunkCenter[1])
 
-    this.chunks[index] = new Chunk(this.chunkWidth, 128, this.chunkDepth)
+    this.chunks[index] = new Chunk(
+      this,
+      chunkCenter[0],
+      chunkCenter[1],
+      this.chunkWidth,
+      this.chunkHeight,
+      this.chunkDepth
+    )
 
     return this.chunks[index]
   }
@@ -109,7 +116,6 @@ export default class Voxels {
     for (let i = x; i < x + width; i++)
       for (let j = y; j < y + height; j++)
         for (let k = z; k < z + depth; k++) {
-          debugger
           this.set(i, j, k, value)
         }
   }

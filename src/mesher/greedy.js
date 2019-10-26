@@ -20,8 +20,8 @@ function computeMask(chunk, axis, level) {
       next[main] = prev[main] = i
       next[sec] = prev[sec] = j
 
-      const a = chunk.get(next[0], next[1], next[2])
-      const b = chunk.get(prev[0], prev[1], prev[2])
+      const a = chunk.peek(next[0], next[1], next[2])
+      const b = chunk.peek(prev[0], prev[1], prev[2])
 
       // check if the 2 adjacent blocks are solid to find the face type and direction
       const ua = a > 1 ? 1 : a && !b ? 1 : 0
