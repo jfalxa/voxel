@@ -1,11 +1,11 @@
 import Mask from '../utils/mask'
 
-function computeMask(voxels, axis, level) {
+function computeMask(chunk, axis, level) {
   const main = (axis + 1) % 3
   const sec = (axis + 2) % 3
 
-  const width = voxels.dimensions[main]
-  const height = voxels.dimensions[sec]
+  const width = chunk.dimensions[main]
+  const height = chunk.dimensions[sec]
 
   const mask = new Mask(width, height)
 
@@ -20,8 +20,8 @@ function computeMask(voxels, axis, level) {
       next[main] = prev[main] = i
       next[sec] = prev[sec] = j
 
-      const a = voxels.get(next[0], next[1], next[2])
-      const b = voxels.get(prev[0], prev[1], prev[2])
+      const a = chunk.get(next[0], next[1], next[2])
+      const b = chunk.get(prev[0], prev[1], prev[2])
 
       // check if the 2 adjacent blocks are solid to find the face type and direction
       const ua = a > 1 ? 1 : a && !b ? 1 : 0
@@ -148,13 +148,13 @@ function computeVertices(quads2D, axis, level) {
   return quads3D
 }
 
-export default function simplify(voxels) {
+export default function simplify(chunk) {
   let triangles = []
 
   // scan each dimension separately
   for (let axis = 0; axis < 3; axis++)
-    for (let level = 0; level <= voxels.dimensions[axis]; level++) {
-      const mask = computeMask(voxels, axis, level)
+    for (let level = 0; level <= chunk.dimensions[axis]; level++) {
+      const mask = computeMask(chunk, axis, level)
 
       const quads2D = computeQuads(mask)
       const quads3D = computeVertices(quads2D, axis, level)

@@ -3,7 +3,7 @@ import { GridMaterial } from '@babylonjs/materials'
 
 import { SIZE, FREQUENCY } from '../config/grid'
 import * as Colors from '../config/colors'
-import Voxels from '../utils/voxels'
+import Voxels from '../voxels'
 
 export function createLight(scene) {
   return new BABYLON.HemisphericLight(
@@ -63,7 +63,7 @@ export function createGround(scene) {
 
 export function createVoxels(scene) {
   const mesh = new BABYLON.Mesh('voxels', scene)
-  mesh.voxels = new Voxels(SIZE, SIZE, SIZE)
+  mesh.voxels = new Voxels(10, 10)
 
   mesh.material = new GridMaterial('voxels-material', scene)
   mesh.material.mainColor = Colors.Light2

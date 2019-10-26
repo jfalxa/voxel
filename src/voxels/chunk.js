@@ -1,4 +1,4 @@
-export default class Voxels {
+export default class Chunk {
   /**
    * @param {number} width
    * @param {number} height

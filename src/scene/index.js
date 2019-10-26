@@ -29,11 +29,11 @@ export default function initScene(engine) {
       value
     )
 
-    let start, end
+    console.log(mesh.voxels)
 
-    start = performance.now()
+    const start = performance.now()
     const { vertexData } = buildVertexData(mesh.voxels)
-    end = performance.now()
+    const end = performance.now()
 
     console.log('Computed in:', (end - start).toFixed(3))
 
