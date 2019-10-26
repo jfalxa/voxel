@@ -14,19 +14,15 @@ export function createLight(scene) {
 }
 
 export function createCamera(scene) {
-  const camera = new BABYLON.ArcRotateCamera(
+  const camera = new BABYLON.UniversalCamera(
     'camera',
-    (5 * Math.PI) / 4,
-    Math.PI / 3,
-    128,
-    CENTER,
+    CENTER.subtractFromFloats(60, -60, 60),
     scene
   )
 
+  camera.setTarget(CENTER)
+
   camera.minZ = 0
-  camera.panningSensibility = 128
-  camera.lowerRadiusLimit = 1
-  camera.upperRadiusLimit = SIZE * 2
 
   camera.checkCollisions = true
   camera.ellipsoid = new BABYLON.Vector3(0.49, 1, 0.49)
