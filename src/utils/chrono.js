@@ -4,6 +4,7 @@ function formatTime(time) {
 
 export default class Chrono {
   step(message = `step ${this.steps.length + 1}`) {
+    this.steps = this.steps || []
     this.steps.push([message, performance.now()])
   }
 
