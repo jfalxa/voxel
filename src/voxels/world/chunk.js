@@ -64,21 +64,4 @@ export default class Chunk {
       this.dirty = true
     }
   }
-
-  /**
-   * @param {number} x
-   * @param {number} y
-   * @param {number} z
-   * @param {number} width
-   * @param {number} height
-   * @param {number} depth
-   * @param {number} value
-   */
-  fill(x, y, z, width, height, depth, value) {
-    for (let i = x; i < x + width; i++)
-      for (let j = y; j < y + height; j++)
-        for (let k = z; k < z + depth; k++) {
-          this.set(i, j, k, value)
-        }
-  }
 }

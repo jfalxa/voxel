@@ -1,4 +1,4 @@
-import Mask from '../utils/mask'
+import Mask from './mask'
 
 function computeMask(chunk, axis, level) {
   const main = (axis + 1) % 3

@@ -1,9 +1,10 @@
 import * as BABYLON from '@babylonjs/core'
 
+import { CHUNK } from '../config/grid'
 import * as Colors from '../config/colors'
 import initDraw from '../draw'
+import createVoxels from '../voxels'
 import * as Entities from './entities'
-import Chrono from '../utils/chrono'
 
 export default function initScene(engine) {
   const scene = new BABYLON.Scene(engine)
@@ -16,28 +17,12 @@ export default function initScene(engine) {
   Entities.createCamera(scene)
   Entities.createGround(scene)
 
-  const world = Entities.createWorld(scene)
+  const voxels = createVoxels(CHUNK[0], CHUNK[1], CHUNK[2], scene)
 
-  const chrono = new Chrono()
+  window.voxels = voxels
 
   initDraw(scene, ({ position, dimensions, value }) => {
-    chrono.start(`drawing ${dimensions.x * dimensions.y * dimensions.z} voxels`)
-
-    world.fill(
-      position.x,
-      position.y,
-      position.z,
-      dimensions.x,
-      dimensions.y,
-      dimensions.z,
-      value
-    )
-
-    chrono.step('filled')
-
-    world.render()
-
-    chrono.stop('rendered')
+    voxels.fill(position, dimensions, value)
   })
 
   return scene

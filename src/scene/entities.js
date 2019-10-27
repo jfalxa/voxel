@@ -1,9 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
 
-import { SIZE, FREQUENCY, CENTER } from '../config/grid'
+import { SIZE, CENTER } from '../config/grid'
 import * as Colors from '../config/colors'
-import World from '../voxels/world'
-import WorldMesh from '../mesher'
 
 export function createLight(scene) {
   return new BABYLON.HemisphericLight(
@@ -55,11 +53,4 @@ export function createGround(scene) {
   ground.position.z = SIZE / 2
 
   return ground
-}
-
-export function createWorld(scene) {
-  const world = new World(FREQUENCY * 4, FREQUENCY * 4)
-  const mesh = new WorldMesh(world, scene)
-
-  return mesh
 }
