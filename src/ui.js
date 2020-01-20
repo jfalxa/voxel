@@ -27,8 +27,6 @@ message.innerHTML = `
   <h3>Free mode</h3>
   <ul>
     <li>Drag mouse around to rotate the camera</li>
-    <li>use Ctrl + drag mouse to move the camera</li>
-    <li>use Scroll to manage zoom level</li>
     <li>hold down Shift to enable draw mode</li>
   </ul>
 
@@ -37,20 +35,18 @@ message.innerHTML = `
     <li>move the mouse around to select a starting point</li>
     <li>use Scroll to adjust the vertical position of the starting point</li>
     <li>press LeftClick and drag the mouse to apply the covered area</li>
-    <li>press RightClick or hold Ctrl and drag the mouse to remove the covered area</li>
+    <li>press RightClick or hold Ctrl while LeftClick and drag the mouse to remove the covered area</li>
     <li>while clicking, use Scroll to adjust the height of the area</li>
     <li>release Shift before releasing click to cancel the current operation</li>
   </ul>
-
-
 </section>
+
 <section id="keyboard-controls">
   <h2 style="text-decoration: underline; margin-top: 16px;">Keyboard controls</h2>
 
   <h3>Free mode</h3>
   <ul>
-    <li>use ArrowKeys to rotate the camera</li>
-    <li>use Ctrl + ArrowsKeys to move the camera</li>
+    <li>use ArrowKeys or WASD to move the camera</li>
     <li>press Enter to switch to draw mode</li>
   </ul>
 
